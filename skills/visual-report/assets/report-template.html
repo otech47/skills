@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPORT TITLE</title>
+<style>
+  /* ---- palette: one calm accent, tuned for light and dark ---- */
+  :root {
+    --bg: #fbfbfa;
+    --surface: #ffffff;
+    --surface-2: #f4f4f2;
+    --ink: #1c1c1a;
+    --ink-soft: #55554f;
+    --ink-faint: #6b6b62;   /* 4.9:1 on --bg; do not lighten, captions use it */
+    --line: #e5e5e0;
+    --accent: #3b5bdb;
+    --accent-soft: #edf0fd;
+    --good: #2b8a3e;
+    --warn: #d9480f;
+    --radius: 12px;
+    --maxw: 760px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16161a;
+      --surface: #1e1e24;
+      --surface-2: #26262e;
+      --ink: #ececef;
+      --ink-soft: #b4b4bd;
+      --ink-faint: #83838f;
+      --line: #33333d;
+      --accent: #8098f9;
+      --accent-soft: #232840;
+      --good: #69db7c;
+      --warn: #ff922b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: clamp(20px, 5vw, 64px) 20px 120px;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; }
+  .wide { max-width: 1040px; margin-left: auto; margin-right: auto; }
+
+  /* ---- altitude 1: orientation ---- */
+  .eyebrow { color: var(--accent); font-weight: 600; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .6rem; }
+  h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .5rem; }
+  .thesis { font-size: clamp(1.05rem, 2.4vw, 1.3rem); color: var(--ink-soft); line-height: 1.5; margin: 0 0 2rem; }
+
+  /* ---- altitude 2: the hero mental model ---- */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(18px, 4vw, 34px);
+    margin: 0 0 2.4rem;
+    overflow-x: auto;   /* only works if the svg is allowed to be wider than this box */
+  }
+  /* A diagram must SCROLL on a narrow screen, never shrink. max-width:100% alone
+     silently scales a 900-wide viewBox to ~300px on a phone, dropping 12px labels
+     to ~4px and making the most important element on the page unreadable. Set
+     min-width to the diagram's natural width so the .hero scroll container engages. */
+  .hero svg, .hero img { height: auto; display: block; margin: 0 auto; min-width: 640px; }
+  @media (min-width: 800px) { .hero svg, .hero img { min-width: 0; max-width: 100%; } }
+  figcaption { color: var(--ink-faint); font-size: .85rem; text-align: center; margin-top: .9rem; }
+
+  h2 { font-size: 1.4rem; letter-spacing: -.01em; margin: 2.8rem 0 .3rem; padding-top: 1rem; }
+  h3 { font-size: 1.08rem; margin: 1.8rem 0 .3rem; }
+  .section-note { color: var(--ink-faint); font-size: .82rem; margin: 0 0 1rem; }
+  p, li { color: var(--ink); }
+  p { margin: 0 0 1rem; }
+  a { color: var(--accent); }
+
+  /* ---- callout: the one thing to remember ---- */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 1rem 1.2rem;
+    margin: 1.6rem 0;
+  }
+  .callout strong { color: var(--accent); }
+
+  /* ---- cards / grid for parallel parts ---- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 1.4rem 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+  }
+  .card h3 { margin-top: 0; }
+  .card p { color: var(--ink-soft); font-size: .95rem; margin-bottom: 0; }
+
+  /* ---- altitude 4: details you can skip ---- */
+  details {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .3rem 1.1rem;
+    margin: 1rem 0;
+    background: var(--surface);
+  }
+  details[open] { padding-bottom: 1rem; }
+  summary { cursor: pointer; font-weight: 600; padding: .7rem 0; color: var(--ink); }
+  summary::marker { color: var(--accent); }
+
+  /* Wrap tables in <div class="t-scroll"> rather than setting display:block on the
+     table itself. display:block drops table layout, so the table shrink-wraps to
+     its content and its borders stop mid-column. */
+  .t-scroll { overflow-x: auto; margin: 1.3rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  th, td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
+  th { color: var(--ink-faint); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  code { background: var(--surface-2); padding: .12em .4em; border-radius: 5px; font-size: .88em; font-family: ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; }
+  pre { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.2rem; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+
+  /* svg diagram helpers. Style markers here, never with fill="var(--x)" as a
+     presentation attribute: var() in presentation attributes is not reliably
+     substituted, and the arrowheads fall back to black, invisible in dark mode. */
+  .node { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  .node-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+  .edge { stroke: var(--ink-faint); stroke-width: 1.5; fill: none; }
+  .arrowhead path { fill: var(--ink-faint); stroke: none; }
+  .svg-lbl { fill: var(--ink); font: 13px -apple-system, sans-serif; }
+  .svg-lbl-soft { fill: var(--ink-soft); font: 11px -apple-system, sans-serif; }
+
+  hr { border: none; border-top: 1px solid var(--line); margin: 2.4rem 0; }
+  .exit { background: var(--surface-2); border-radius: var(--radius); padding: 1.2rem 1.4rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <!-- ALTITUDE 1 - orientation. A smart outsider gets this in one breath.
+       The h1 states a CLAIM, not a label. "PR #4766 analysis" is a label.
+       "The hotfix is safe, the feature riding with it is the risk" is a claim. -->
+  <p class="eyebrow">EYEBROW / WHAT KIND OF THING THIS IS</p>
+  <h1>The title states the finding, not the topic</h1>
+  <p class="thesis">One or two sentences that land for someone with zero context. Say what the system or product actually is before naming its parts. No jargon here, and no term the reader has not been given.</p>
+  <p class="section-note">Dated so it survives being forwarded. Say when, and what it was made from.</p>
+
+  <!-- ALTITUDE 2 - the mental model. One picture that holds the whole shape. -->
+  <figure class="hero">
+    <!-- inline SVG diagram / mind map / flow goes here -->
+    <figcaption>The whole idea at a glance.</figcaption>
+  </figure>
+
+  <!-- ALTITUDE 3 - the main parts and how they relate. Still conceptual. -->
+  <h2>How the pieces fit</h2>
+  <div class="grid">
+    <div class="card"><h3>Part A</h3><p>What it does, in a sentence.</p></div>
+    <div class="card"><h3>Part B</h3><p>What it does, in a sentence.</p></div>
+    <div class="card"><h3>Part C</h3><p>What it does, in a sentence.</p></div>
+  </div>
+
+  <div class="callout"><strong>The one thing to hold onto:</strong> the single insight everything else hangs off.</div>
+
+  <!-- ALTITUDE 4 - the ground. Specifics, code, numbers, edge cases. Skippable.
+       Fold reference material (dense tables, full state lists, config matrices),
+       not just prose. But never cite folded content from above the fold: a reader
+       who sees "steps 6, 7 and 10" with the step list collapsed hits a dead end. -->
+  <h2>The details</h2>
+  <details>
+    <summary>Write a summary that says what is inside, so the reader can skip it knowingly</summary>
+    <div class="t-scroll">
+      <table>
+        <tr><th>Thing</th><th>Value</th></tr>
+        <tr><td>Link real references</td><td><a href="https://github.com/org/repo/pull/1">#1</a></td></tr>
+      </table>
+    </div>
+  </details>
+
+  <!-- ALTITUDE 5 - the exit. What to do or remember. -->
+  <div class="exit">
+    <h3 style="margin-top:0">So what</h3>
+    <p style="margin-bottom:0">The decision, the next step, or the takeaway.</p>
+  </div>
+
+</main>
+</body>
+</html>
