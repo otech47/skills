@@ -19,7 +19,8 @@
     --good: #2b8a3e;
     --warn: #d9480f;
     --radius: 12px;
-    --maxw: 760px;
+    --maxw: 800px;    /* reading column: prose stays a comfortable measure */
+    --wide: 1320px;   /* breakout cap: tables, card grids, diagrams, code */
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -37,16 +38,30 @@
     }
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  /* Base 18px (112.5% of the 16px default) so the report reads a notch larger
+     without the reader zooming. Everything else is sized in rem/em off this
+     root, so this one value scales the whole page; keep sizes relative. */
+  html { -webkit-text-size-adjust: 100%; font-size: 112.5%; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font: 1.05rem/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     padding: clamp(20px, 5vw, 64px) 20px 120px;
   }
   .wrap { max-width: var(--maxw); margin: 0 auto; }
-  .wide { max-width: 1040px; margin-left: auto; margin-right: auto; }
+
+  /* Structural elements break out past the reading column to use a wide screen;
+     prose stays narrow. Capped at --wide and clamped to the viewport, so it
+     never causes sideways scroll. Centered with margins, not transform, so it
+     still works one level deep, e.g. a table inside <details>. Add class
+     "breakout" (or "wide") to opt an element in beyond the defaults below. */
+  .breakout, .wide,
+  main > .hero, main > .grid, main > .t-scroll, main > pre {
+    width: min(var(--wide), 100vw - 40px);
+    margin-left: calc(50% - min(var(--wide), 100vw - 40px) / 2);
+    margin-right: calc(50% - min(var(--wide), 100vw - 40px) / 2);
+  }
 
   /* ---- altitude 1: orientation ---- */
   .eyebrow { color: var(--accent); font-weight: 600; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .6rem; }
@@ -88,7 +103,7 @@
   .callout strong { color: var(--accent); }
 
   /* ---- cards / grid for parallel parts ---- */
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 1.4rem 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 1.4rem 0; }
   .card {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -153,23 +168,39 @@
     <figcaption>The whole idea at a glance.</figcaption>
   </figure>
 
-  <!-- ALTITUDE 3 - the main parts and how they relate. Still conceptual. -->
+  <!-- ALTITUDE 3 - the main parts and how they relate. Still conceptual.
+       Top-level tables and the card grid break out wider than the prose here. -->
   <h2>How the pieces fit</h2>
   <div class="grid">
     <div class="card"><h3>Part A</h3><p>What it does, in a sentence.</p></div>
     <div class="card"><h3>Part B</h3><p>What it does, in a sentence.</p></div>
     <div class="card"><h3>Part C</h3><p>What it does, in a sentence.</p></div>
+    <div class="card"><h3>Part D</h3><p>What it does, in a sentence.</p></div>
+  </div>
+
+  <!-- A comparison table sits at top level, so it breaks out wide. -->
+  <div class="t-scroll">
+    <table>
+      <tr><th>Option</th><th>What it is</th><th>Costs</th><th>When to reach for it</th></tr>
+      <tr><td>Option one</td><td>a sentence</td><td>a sentence</td><td>a sentence</td></tr>
+      <tr><td>Option two</td><td>a sentence</td><td>a sentence</td><td>a sentence</td></tr>
+    </table>
   </div>
 
   <div class="callout"><strong>The one thing to hold onto:</strong> the single insight everything else hangs off.</div>
 
-  <!-- ALTITUDE 4 - the ground. Specifics, code, numbers, edge cases. Skippable.
-       Fold reference material (dense tables, full state lists, config matrices),
-       not just prose. But never cite folded content from above the fold: a reader
-       who sees "steps 6, 7 and 10" with the step list collapsed hits a dead end. -->
+  <!-- ALTITUDE 4 - the ground. OPTIONAL, delete the section if nothing earns a fold.
+       Summaries state the question the fold answers, not its contents. See SKILL.md.
+       Never cite folded content from above the fold: "steps 6, 7 and 10" with the
+       step list collapsed is a dead end.
+       A second diagram fits here too, not just tables and text. A sequence or
+       state machine often explains a detail best. See the patterns in
+       references/information-hierarchy.md. -->
   <h2>The details</h2>
+  <!-- A table inside a fold stays at the fold's width (it never pokes past the
+       border). If it genuinely needs room, put "breakout" on the <details>. -->
   <details>
-    <summary>Write a summary that says what is inside, so the reader can skip it knowingly</summary>
+    <summary>State the question this answers, so the reader knows why they would open it</summary>
     <div class="t-scroll">
       <table>
         <tr><th>Thing</th><th>Value</th></tr>
