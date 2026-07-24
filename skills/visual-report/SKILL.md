@@ -21,7 +21,7 @@ So every report descends through altitudes, highest first. The reader should be 
 1. **Orientation (one breath).** A single sentence a smart person who just walked in would understand. What is this about, and why would the reader care. No jargon, nothing that assumes the conversation you just had.
 2. **The mental model (one picture).** A diagram, mind map, or analogy that holds the whole shape at once, so every later detail has a place to land. This is where a visual earns its keep.
 3. **The main parts (the map).** The three-to-seven major pieces and how they relate. Still conceptual, no code yet.
-4. **The details (the ground).** Specifics, code, numbers, edge cases, tradeoffs. This is where technical depth goes, and it is where collapsible sections keep the page from overwhelming a reader who does not need all of it.
+4. **The details (the ground), only if there are any.** Specifics, code, numbers, edge cases, tradeoffs, folded so a reader who does not need them is not made to scroll past them. This altitude is optional, and a report with no folds is finished rather than lazy. Filling it for its own sake is how a report goes bad after the first screen, so see "every fold has to earn its place" below.
 5. **The exit (so what).** The decision, the next step, or the one thing to remember.
 
 The test for whether you got it right: read only the first screen, as if you had no other context. If you would not know what this is or why it matters, add altitude, do not add detail. This is the single most important rule in the skill, because it is the thing the user most often finds broken.
@@ -60,7 +60,34 @@ The mental-model picture at altitude 2 does more work than anything else on the 
 
 For any real data chart (bars, lines, distributions), follow the `dataviz` skill for color and form rather than improvising, and keep the same restrained palette the template uses.
 
-Diagram pattern catalogue with copy-ready SVG starting points: `references/information-hierarchy.md`.
+### Keep drawing as you descend
+
+The altitude-2 hero holds the whole shape, but it should not be the last visual on the page. Reports tend to go picture, then text, then table, then folds of more text, as if drawing were a high-altitude tool only. It is not. As you descend, watch for the point where a table or a paragraph is really describing a relationship: a sequence of calls, a state machine, a before and after, a decision tree, how two structures line up. Drawn, those land in one look. Written, the reader rebuilds them row by row. A low-altitude diagram can carry more technical load than the hero and lean on more context, because the reader is oriented by the time they reach it, so a second or third diagram inline or inside a `details` fold usually beats another block of text. The bar does not change. It earns its place by showing a relationship the eye reads faster than the words would, not by making the page look busier.
+
+Diagram pattern catalogue with copy-ready SVG starting points, including the lower-altitude sequence and state patterns: `references/information-hierarchy.md`.
+
+## Every fold has to earn its place
+
+Before a fold ships, name two things: **the question it answers, and the person who is asking.** The second half is the one that gets skipped, and skipping it is what produces a fold that opens onto a wall of identifiers or config values reading as noise.
+
+That material is usually not padding. In a migration plan, the list of zone ids and bucket names is real and someone genuinely needs it, because whoever executes phase one has to write those imports. The mistake is that it serves a **different reader than the rest of the page**. The person reviewing the plan and the person executing it want different things, and a report that gives both the same affordance makes the executing reader's checklist look like an explanatory aside. So sort by audience first:
+
+- **Written for the reader of this report.** Keep it, and make the summary name the question (below).
+- **Written for whoever executes the work later.** Keep it but mark it, so nobody reads it as explanation. Label it an appendix in the summary itself, or better, write it to `files/` in the scratch run dir and link to it. A generated mapping or an import list rendered as a paragraph of inline code serves nobody: too dense to read, too unstructured to paste into a script.
+- **Written for neither.** Cut it. Watch for this one, because it is the failure this skill causes: it scaffolds a place for depth, and dumping something enumerable into the empty slot is the path of least resistance.
+
+### The summary names the question, not the contents
+
+A summary that names a category of data ("import inventory and identifiers, by phase", "cloudformation stack disposition") tells the reader what is in the box but gives them no reason to open it. A summary that names a question does both at once, because the question implies who is asking.
+
+| instead of | write |
+| --- | --- |
+| cloudformation stack disposition | which existing stacks get deleted, which get adopted, and what that costs |
+| service dependency edges, for the module design | why the module boundaries fall where they do, and the one dependency we could not enumerate |
+| the account today, compressed | what is actually running right now, if you need to sanity check the plan against reality |
+| import inventory and identifiers, by phase | appendix: the exact resources phase 1 imports, for whoever runs it |
+
+Some material needs no help: "the new repo layout" over a file tree is already self-evident, and "what this borrows from another repo, and what it deliberately skips" already names its question. So this is not a rule that every fold gets a subtitle. A mandatory label just produces "read this to understand the import inventory," which is circular and adds noise. The test is whether a reader can tell why they would open it, by whatever means gets there.
 
 ## It is a standalone artifact, not a reply
 
@@ -80,9 +107,11 @@ A reader who catches one of these stops trusting everything above it. So after w
 
 - The first screen orients a stranger, and no proper noun on it is undefined.
 - There is one picture that shows the whole shape, near the top, and every label in it is a term the reader already has.
+- The visuals do not stop at the hero. Where a table or a paragraph is really a sequence, a state change, a before and after, or a decision, a small labeled diagram carries it better, down in the detail and inside folds too.
 - Importance is visible: the eye is pulled to the thesis and the key callout before the body text, by size and weight and color, not by the reader having to read everything.
-- Detail is present but not forced. Fold reference material (dense tables, config matrices, full state lists), not just prose. Never cite folded content from above the fold, and keep anything that must be searchable or printable out of a fold, since collapsed sections are invisible to Ctrl+F and to print.
+- Detail is present but not forced, and every fold answers a question a named reader would ask. Fold dense material rather than prose, but cut it instead if nothing is asking for it. Never cite folded content from above the fold, and keep anything that must be searchable or printable out of a fold, since collapsed sections are invisible to Ctrl+F and to print.
 - It reads in light and dark, and the hero diagram is legible on a phone. Diagrams scroll on narrow screens rather than shrinking to unreadable type.
+- The template reads a notch larger than browser default, so nobody reaches for cmd-+. Prose holds a narrow, readable measure, while wide tables, the card grid, diagrams, and code break out past it to fill a large screen, capped so they never sprawl or scroll sideways. Breakout is automatic at the top level. Add class `breakout` (or `wide`) to opt anything else in, like a `<details>` holding a wide table, and do not widen the prose column to match.
 - The prose follows the `prose-style` skill: no em dashes, lowercase to match his voice, no narration of the conversation that produced it. Run that audit on the report text before finishing.
 
 ## Self-audit before you hand it over

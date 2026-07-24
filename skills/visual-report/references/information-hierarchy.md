@@ -19,7 +19,7 @@ The reader arrives cold. Their brain builds understanding top-down: it needs a f
 
 **Altitude 3, the map.** The major parts and their relationships, in words and cards, still conceptual. Three to seven parts; if there are more, you have not found the right grouping yet. Group first, then the reader can hold the group and expand it.
 
-**Altitude 4, the ground.** Now the specifics: code, numbers, config, edge cases, the tradeoff you actually weighed. This is real content, not filler, but most readers do not need all of it on the first pass, so it belongs in collapsible `details` blocks or clearly-marked sections they can skip. Depth available, not depth imposed.
+**Altitude 4, the ground.** Now the specifics: code, numbers, config, edge cases, the tradeoff you actually weighed. This is real content, not filler, but most readers do not need all of it on the first pass, so it belongs in collapsible `details` blocks or clearly-marked sections they can skip. Depth available, not depth imposed. Draw here too. A detail that is a sequence of calls, a state machine, or a before and after reads faster as a small diagram than as a table or a paragraph, and the reader now has the frame to take in a denser picture than the hero could carry. A folded mechanism is often exactly the thing a diagram explains best.
 
 **Altitude 5, the exit.** The reader is leaving with something. The decision to make, the next action, the one sentence to remember. Do not end on the last technical detail; end on the so-what.
 
@@ -41,7 +41,7 @@ Same facts, but now the reader has a frame. The `settings.json` and `daily.py` s
 
 ## Diagram patterns, with copy-ready SVG
 
-Use the template's classes so diagrams inherit the theme and stay legible in dark mode: `.node` (plain box), `.node-accent` (highlighted box), `.edge` (connector), `.svg-lbl` (label text), `.svg-lbl-soft` (secondary text), `.arrowhead` (marker). Put the diagram inside the `.hero` figure at altitude 2, or inline lower down.
+Use the template's classes so diagrams inherit the theme and stay legible in dark mode: `.node` (plain box), `.node-accent` (highlighted box), `.edge` (connector), `.svg-lbl` (label text), `.svg-lbl-soft` (secondary text), `.arrowhead` (marker). Put the hero diagram inside the `.hero` figure at altitude 2. Reuse the same classes for diagrams lower down, dropped inline between paragraphs, set beside or in place of a table, or tucked inside a `details` fold. Most reports want more than one: the hero for the whole shape, then smaller diagrams that each pin a single mechanism as the reader reaches it. The patterns below run high altitude to low, and the last two, sequence and state, are the ones that most often replace a wall of text or a dense table down in the detail.
 
 Two rules that decide whether the diagram survives contact with a real reader:
 
@@ -112,6 +112,59 @@ For levels of abstraction, a tech stack, or a containment relationship. Top is h
 
 ### Comparison and decision
 Two or three options side by side are usually clearest as an HTML `.grid` of `.card`s or a table, not SVG. A decision ("use A when..., use B when...") reads well as a short table with a "use it when" column. Reach for SVG only when the branching itself is the point.
+
+### Sequence over time
+Low altitude. For an interaction between a few actors, message by message: who calls whom, in what order. Actor headers across the top, lifelines dropping down, messages as horizontal arrows read top to bottom. This is the diagram that most often beats a paragraph narrating a call flow.
+
+```html
+<svg viewBox="0 0 520 220" role="img" aria-label="client pays through a gateway that debits the ledger">
+  <rect class="node-accent" x="20"  y="16" width="120" height="38" rx="8"/>
+  <text class="svg-lbl" x="80"  y="40" text-anchor="middle">Client</text>
+  <rect class="node" x="200" y="16" width="120" height="38" rx="8"/>
+  <text class="svg-lbl" x="260" y="40" text-anchor="middle">Gateway</text>
+  <rect class="node" x="380" y="16" width="120" height="38" rx="8"/>
+  <text class="svg-lbl" x="440" y="40" text-anchor="middle">Ledger</text>
+  <path class="edge" d="M80 54 V206"/>
+  <path class="edge" d="M260 54 V206"/>
+  <path class="edge" d="M440 54 V206"/>
+  <text class="svg-lbl-soft" x="170" y="86" text-anchor="middle">pay(invoice)</text>
+  <path class="edge" d="M80 92 H256" marker-end="url(#a)"/>
+  <text class="svg-lbl-soft" x="350" y="126" text-anchor="middle">debit</text>
+  <path class="edge" d="M260 132 H436" marker-end="url(#a)"/>
+  <text class="svg-lbl-soft" x="262" y="166" text-anchor="middle">settled</text>
+  <path class="edge" d="M440 172 H84" marker-end="url(#a)"/>
+  <defs>
+    <marker id="a" class="arrowhead" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z"/>
+    </marker>
+  </defs>
+</svg>
+```
+
+### State machine / lifecycle
+Low altitude. For a thing that moves through states: nodes are states, edges are transitions labeled with what triggers them. Loops and back-edges are the payoff, since a table cannot show them without the reader tracing rows.
+
+```html
+<svg viewBox="0 0 520 170" role="img" aria-label="idle to running to settled, with a retry back to idle">
+  <rect class="node-accent" x="16"  y="52" width="120" height="44" rx="22"/>
+  <text class="svg-lbl" x="76"  y="79" text-anchor="middle">idle</text>
+  <rect class="node" x="200" y="52" width="120" height="44" rx="22"/>
+  <text class="svg-lbl" x="260" y="79" text-anchor="middle">running</text>
+  <rect class="node" x="384" y="52" width="120" height="44" rx="22"/>
+  <text class="svg-lbl" x="444" y="79" text-anchor="middle">settled</text>
+  <path class="edge" d="M136 74 H196" marker-end="url(#a)"/>
+  <text class="svg-lbl-soft" x="166" y="66" text-anchor="middle">start</text>
+  <path class="edge" d="M320 74 H380" marker-end="url(#a)"/>
+  <text class="svg-lbl-soft" x="350" y="66" text-anchor="middle">done</text>
+  <path class="edge" d="M260 96 C260 140 76 140 76 98" marker-end="url(#a)"/>
+  <text class="svg-lbl-soft" x="168" y="150" text-anchor="middle">retry on failure</text>
+  <defs>
+    <marker id="a" class="arrowhead" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z"/>
+    </marker>
+  </defs>
+</svg>
+```
 
 ## Visual encoding: how the eye reads a page
 
