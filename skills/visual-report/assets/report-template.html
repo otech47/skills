@@ -63,6 +63,15 @@
     margin-right: calc(50% - min(var(--wide), 100vw - 40px) / 2);
   }
 
+  /* Stacked dropdowns are one visual set, so their widths move together. When any
+     top-level fold opts into the breakout, all of them follow, which keeps one
+     wide fold from sitting among narrow neighbours with mismatched edges. */
+  main:has(> details.breakout, > details.wide) > details {
+    width: min(var(--wide), 100vw - 40px);
+    margin-left: calc(50% - min(var(--wide), 100vw - 40px) / 2);
+    margin-right: calc(50% - min(var(--wide), 100vw - 40px) / 2);
+  }
+
   /* ---- altitude 1: orientation ---- */
   .eyebrow { color: var(--accent); font-weight: 600; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .6rem; }
   h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .5rem; }
@@ -124,6 +133,9 @@
   details[open] { padding-bottom: 1rem; }
   summary { cursor: pointer; font-weight: 600; padding: .7rem 0; color: var(--ink); }
   summary::marker { color: var(--accent); }
+  /* In a widened fold, hold running text at the reading measure rather than
+     letting it stretch full width. Tables and other wide blocks keep the room. */
+  details > p, details > ul, details > ol, details > blockquote { max-width: var(--maxw); }
 
   /* Wrap tables in <div class="t-scroll"> rather than setting display:block on the
      table itself. display:block drops table layout, so the table shrink-wraps to
@@ -198,7 +210,8 @@
        references/information-hierarchy.md. -->
   <h2>The details</h2>
   <!-- A table inside a fold stays at the fold's width (it never pokes past the
-       border). If it genuinely needs room, put "breakout" on the <details>. -->
+       border). If it needs room, put "breakout" on that <details>, and every
+       sibling fold widens to match so the dropdowns stay aligned. -->
   <details>
     <summary>State the question this answers, so the reader knows why they would open it</summary>
     <div class="t-scroll">
