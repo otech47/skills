@@ -30,7 +30,7 @@ Two corollaries that cold readers catch constantly:
 
 **Name the thing before you use its parts.** Somewhere in the first screen, one clause has to say what the system or product actually *is*. Reports routinely explain a subsystem in perfect detail while never once saying "this is an occupational-health testing product" or "this is a bitcoin wallet," so the reader reverse-engineers the domain from scattered nouns. Related: gloss every proper noun and acronym on first use, in four words. The worst offenders hide in **diagram labels**, where a term gets introduced with no prose around it to define it. The element you built to orient a newcomer is the last place you can afford an undefined token.
 
-**The title states the finding, not the topic.** "PR 4766 analysis" is a label and wastes the most valuable line on the page. "The hotfix is safe, the feature riding along with it is the risk" is a claim a reader can act on.
+**The title states the finding, not the topic.** "PR 4766 analysis" is a label and wastes the most valuable line on the page. "The hotfix is safe, the feature riding along with it is the risk" is a claim a reader can act on. Keep it one tight claim the eye takes in at a glance. The pull is to cram the finding and its mechanism into the headline with a colon ("SQS over Temporal: kill the ops pain at a third of the cost and make handlers idempotent"), which stacks to three lines and reads slower than it should. The mechanism half belongs in the thesis one line below, where it has room. State the finding in the h1, explain it in the thesis.
 
 Full method, diagram patterns, and worked failure-and-fix examples: `references/information-hierarchy.md`. Read it before writing the report the first few times.
 
@@ -59,6 +59,8 @@ The mental-model picture at altitude 2 does more work than anything else on the 
 **Size budget: a finished report is tens of KB, not megabytes.** If yours is over ~150KB you have inlined a library, and that is a defect, not a tradeoff.
 
 For any real data chart (bars, lines, distributions), follow the `dataviz` skill for color and form rather than improvising, and keep the same restrained palette the template uses.
+
+When the report turns on a few pivotal numbers (an incident's minutes-down and dollars, an audit's counts, a status update's key metrics), a `.stats` row of two-to-four big numbers near the top lands the scale before the reader reads a word of body. The template ships it. Put `.accent` or `.warn` on the one number that carries the headline, and skip the row entirely when the report has no figures that matter.
 
 ### Keep drawing as you descend
 
@@ -122,7 +124,7 @@ Own the render loop rather than trusting the markup. Run:
 scripts/check-render.sh reports/your-report.html
 ```
 
-It checks the mechanical failures that actually ship (oversized file, external assets, unresolved build placeholders, em dashes, sideways page scroll, a hero diagram that shrinks instead of scrolling) and writes a wide and a narrow screenshot.
+It checks the mechanical failures that actually ship (oversized file, external assets, unresolved build placeholders, em and en dashes including the HTML-entity forms `&ndash;` and `&mdash;` that hide in a time or number range, sideways page scroll, a hero diagram that shrinks instead of scrolling) and writes a wide and a narrow screenshot.
 
 Then read both screenshots, because the part that matters is not mechanical. Ask the question the reader will ask: **if I knew nothing about this, would the first screen tell me what it is and why I should care?** Every proper noun on that screen needs to already be defined. If you cannot answer yes, the report is not done, and the fix is more altitude rather than more detail.
 

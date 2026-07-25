@@ -77,6 +77,17 @@
   h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .5rem; }
   .thesis { font-size: clamp(1.05rem, 2.4vw, 1.3rem); color: var(--ink-soft); line-height: 1.5; margin: 0 0 2rem; }
 
+  /* Optional stat row: a few pivotal numbers up top, so the scale of the thing
+     lands before the reader reads a word of body. Earns its place on a
+     numbers-driven report (incident, metrics, audit). Skip it otherwise.
+     Put .accent or .warn on the one .num that carries the headline. */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 1.4rem 0 2.2rem; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.1rem; }
+  .stat .num { font-size: 1.9rem; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; }
+  .stat .num.accent { color: var(--accent); }
+  .stat .num.warn { color: var(--warn); }
+  .stat .lbl { color: var(--ink-faint); font-size: .82rem; margin-top: .25rem; }
+
   /* ---- altitude 2: the hero mental model ---- */
   .hero {
     background: var(--surface);
@@ -168,11 +179,21 @@
 
   <!-- ALTITUDE 1 - orientation. A smart outsider gets this in one breath.
        The h1 states a CLAIM, not a label. "PR #4766 analysis" is a label.
-       "The hotfix is safe, the feature riding with it is the risk" is a claim. -->
+       "The hotfix is safe, the feature riding with it is the risk" is a claim.
+       Keep it one tight claim, readable at a glance. If you reach for a colon or
+       a second clause to cram in the mechanism, that half belongs in the thesis
+       right below, not stacked into a three-line headline. -->
   <p class="eyebrow">EYEBROW / WHAT KIND OF THING THIS IS</p>
   <h1>The title states the finding, not the topic</h1>
   <p class="thesis">One or two sentences that land for someone with zero context. Say what the system or product actually is before naming its parts. No jargon here, and no term the reader has not been given.</p>
   <p class="section-note">Dated so it survives being forwarded. Say when, and what it was made from.</p>
+
+  <!-- Optional: a few pivotal numbers, only on a numbers-driven report. Delete if none. -->
+  <div class="stats">
+    <div class="stat"><div class="num warn">38%</div><div class="lbl">what the headline number is</div></div>
+    <div class="stat"><div class="num">99 min</div><div class="lbl">a second number worth seeing first</div></div>
+    <div class="stat"><div class="num">~$210k</div><div class="lbl">a third, if the report has one</div></div>
+  </div>
 
   <!-- ALTITUDE 2 - the mental model. One picture that holds the whole shape. -->
   <figure class="hero">

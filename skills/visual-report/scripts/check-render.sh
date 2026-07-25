@@ -33,6 +33,11 @@ fi
 if LC_ALL=C grep -qF -e $'\xe2\x80\x94' -e $'\xe2\x80\x93' "$ABS"; then
   echo "  FAIL: em or en dash present. Use a plain hyphen."
 fi
+# HTML lets a dash hide as an entity, which the raw-byte scan above misses. A
+# time or number range (14:02&ndash;15:41) is where it slips in.
+if grep -qiE '&(m|n)dash;|&#(8211|8212);|&#x(2013|2014);' "$ABS"; then
+  echo "  FAIL: em or en dash HTML entity present (&ndash; / &mdash;). Use a plain hyphen."
+fi
 
 # Measure layout: does the page scroll sideways, and does the hero diagram hold
 # its size (good, it scrolls in its own box) or shrink to unreadable (bad)?
