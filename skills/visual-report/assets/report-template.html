@@ -77,13 +77,9 @@
   h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .5rem; }
   .thesis { font-size: clamp(1.05rem, 2.4vw, 1.3rem); color: var(--ink-soft); line-height: 1.5; margin: 0 0 2rem; }
 
-  /* Stat, for a figure that IS the finding ("38% of EU checkouts failed"), not
-     one that describes the work ("12 files reviewed") or a config value the
-     prose should have carried. There is deliberately no stat row in the body
-     below: most reports have no such number, and an empty row up top gets
-     filled with whatever is countable. Set one or two down at altitude 3 beside
-     the part they measure, .accent or .warn on the one carrying the weight.
-     Wanting a third to balance the row is the signal to drop the row. */
+  /* Stat, for a figure that IS the finding ("38% of EU checkouts failed"), not one
+     describing the work ("12 files reviewed"). .accent or .warn on the one
+     carrying the weight. */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 1.4rem 0 2.2rem; }
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.1rem; }
   .stat .num { font-size: 1.9rem; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; }
@@ -199,8 +195,8 @@
 
   <!-- ALTITUDE 3 - the main parts and how they relate. Still conceptual.
        Top-level tables and the card grid break out wider than the prose here.
-       If a figure is itself a finding, this is where it goes, in a .stat next to
-       the part it measures. Not as a row of four above the thesis. -->
+       A figure that is itself a finding goes here, in a .stat beside the part
+       it measures. -->
   <h2>How the pieces fit</h2>
   <div class="grid">
     <div class="card"><h3>Part A</h3><p>What it does, in a sentence.</p></div>

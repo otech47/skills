@@ -62,11 +62,11 @@ For any real data chart (bars, lines, distributions), follow the `dataviz` skill
 
 ### Numbers are not a slot to fill
 
-The template ships no stat row, and most reports should not add one. A row of big figures at the top is the easiest thing on the page to fake, so an empty slot up there gets filled with whatever happens to be countable. An auth-flow walkthrough that opens with `6 digits`, `15 min`, `30 days`, `5 tries` has handed its loudest position to four constants that belonged in a sentence, and pushed the actual finding down below them. The result reads as distracting, because it is: the largest type on the page is saying the least.
+The template ships no stat row, and most reports should not add one. A row of big figures at the top is the easiest thing on the page to fake, so an empty slot up there gets filled with whatever happens to be countable. An auth-flow walkthrough that opens with `6 digits`, `15 min`, `30 days`, `5 tries` has handed its loudest position to four constants that belonged in a sentence, and pushed the actual finding below them.
 
 A figure earns large type only when the number **is** the finding. "38% of EU checkouts failed" is a finding. "12 files reviewed" is a description of the work. If the sentence around the number is what carries the meaning, leave it in the sentence.
 
-When one or two genuinely qualify, set them at altitude 3 beside the part they measure, where the reader has the context to know what the number means, rather than stacked above the thesis. The `.stats` and `.stat` classes are in the template's CSS for that, with `.accent` or `.warn` on the one carrying the weight. Reaching for a third or a fourth to balance the row is the signal to drop the row.
+When one or two genuinely qualify, set them at altitude 3 beside the part they measure, not stacked above the thesis. By then the reader has the context to know what the number means. The `.stats` and `.stat` classes are in the template's CSS for that, with `.accent` or `.warn` on the one carrying the weight. Reaching for a third or a fourth to balance the row is the signal to drop the row.
 
 ### Keep drawing as you descend
 
