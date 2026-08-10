@@ -77,10 +77,13 @@
   h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .5rem; }
   .thesis { font-size: clamp(1.05rem, 2.4vw, 1.3rem); color: var(--ink-soft); line-height: 1.5; margin: 0 0 2rem; }
 
-  /* Optional stat row: a few pivotal numbers up top, so the scale of the thing
-     lands before the reader reads a word of body. Earns its place on a
-     numbers-driven report (incident, metrics, audit). Skip it otherwise.
-     Put .accent or .warn on the one .num that carries the headline. */
+  /* Stat, for a figure that IS the finding ("38% of EU checkouts failed"), not
+     one that describes the work ("12 files reviewed") or a config value the
+     prose should have carried. There is deliberately no stat row in the body
+     below: most reports have no such number, and an empty row up top gets
+     filled with whatever is countable. Set one or two down at altitude 3 beside
+     the part they measure, .accent or .warn on the one carrying the weight.
+     Wanting a third to balance the row is the signal to drop the row. */
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 1.4rem 0 2.2rem; }
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.1rem; }
   .stat .num { font-size: 1.9rem; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; }
@@ -188,13 +191,6 @@
   <p class="thesis">One or two sentences that land for someone with zero context. Say what the system or product actually is before naming its parts. No jargon here, and no term the reader has not been given.</p>
   <p class="section-note">Dated so it survives being forwarded. Say when, and what it was made from.</p>
 
-  <!-- Optional: a few pivotal numbers, only on a numbers-driven report. Delete if none. -->
-  <div class="stats">
-    <div class="stat"><div class="num warn">38%</div><div class="lbl">what the headline number is</div></div>
-    <div class="stat"><div class="num">99 min</div><div class="lbl">a second number worth seeing first</div></div>
-    <div class="stat"><div class="num">~$210k</div><div class="lbl">a third, if the report has one</div></div>
-  </div>
-
   <!-- ALTITUDE 2 - the mental model. One picture that holds the whole shape. -->
   <figure class="hero">
     <!-- inline SVG diagram / mind map / flow goes here -->
@@ -202,7 +198,9 @@
   </figure>
 
   <!-- ALTITUDE 3 - the main parts and how they relate. Still conceptual.
-       Top-level tables and the card grid break out wider than the prose here. -->
+       Top-level tables and the card grid break out wider than the prose here.
+       If a figure is itself a finding, this is where it goes, in a .stat next to
+       the part it measures. Not as a row of four above the thesis. -->
   <h2>How the pieces fit</h2>
   <div class="grid">
     <div class="card"><h3>Part A</h3><p>What it does, in a sentence.</p></div>

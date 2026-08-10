@@ -60,7 +60,13 @@ The mental-model picture at altitude 2 does more work than anything else on the 
 
 For any real data chart (bars, lines, distributions), follow the `dataviz` skill for color and form rather than improvising, and keep the same restrained palette the template uses.
 
-When the report turns on a few pivotal numbers (an incident's minutes-down and dollars, an audit's counts, a status update's key metrics), a `.stats` row of two-to-four big numbers near the top lands the scale before the reader reads a word of body. The template ships it. Put `.accent` or `.warn` on the one number that carries the headline, and skip the row entirely when the report has no figures that matter.
+### Numbers are not a slot to fill
+
+The template ships no stat row, and most reports should not add one. A row of big figures at the top is the easiest thing on the page to fake, so an empty slot up there gets filled with whatever happens to be countable. An auth-flow walkthrough that opens with `6 digits`, `15 min`, `30 days`, `5 tries` has handed its loudest position to four constants that belonged in a sentence, and pushed the actual finding down below them. The result reads as distracting, because it is: the largest type on the page is saying the least.
+
+A figure earns large type only when the number **is** the finding. "38% of EU checkouts failed" is a finding. "12 files reviewed" is a description of the work. If the sentence around the number is what carries the meaning, leave it in the sentence.
+
+When one or two genuinely qualify, set them at altitude 3 beside the part they measure, where the reader has the context to know what the number means, rather than stacked above the thesis. The `.stats` and `.stat` classes are in the template's CSS for that, with `.accent` or `.warn` on the one carrying the weight. Reaching for a third or a fourth to balance the row is the signal to drop the row.
 
 ### Keep drawing as you descend
 
