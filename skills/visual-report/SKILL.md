@@ -121,6 +121,7 @@ A reader who catches one of these stops trusting everything above it. So after w
 - It reads in light and dark, and the hero diagram is legible on a phone. Diagrams scroll on narrow screens rather than shrinking to unreadable type.
 - The template reads a notch larger than browser default, so nobody reaches for cmd-+. Prose holds a narrow, readable measure, while wide tables, the card grid, diagrams, and code break out past it to fill a large screen, capped so they never sprawl or scroll sideways. Breakout is automatic at the top level. Add class `breakout` (or `wide`) to opt anything else in, like a `<details>` holding a wide table, and do not widen the prose column to match.
 - The prose follows the `prose-style` skill: no em dashes, lowercase to match his voice, no narration of the conversation that produced it. Run that audit on the report text before finishing.
+- One prose style guide may be switched on for reports, and it lives in this skill's `references/` directory. Look for `google-devdocs.md` (Google developer documentation style, the default) or `ast100.md` (ASD-STE100 Simplified Technical English). Whichever one is present is on, so read it fresh and run its rules in the same audit pass. A file renamed to `.off` is off. If both are off, write in the normal voice above and skip this entirely. If both are somehow present, apply `google-devdocs.md`. The knob is `report-style google|ast100|off|status`; never edit the files to switch it.
 
 ## Self-audit before you hand it over
 

@@ -1,0 +1,34 @@
+# AST100 report writing style (ASD-STE100 Simplified Technical English)
+
+Applies to the prose in a visual report: the thesis, body copy, callouts, captions, and summaries. It does not apply to code, commands, config values, log lines, proper nouns, or numbers. Those stay verbatim.
+
+**Toggle:** this file's presence is the whole switch. Run `report-style google|ast100|off|status` (`~/.local/bin/report-style`). It renames this file to `ast100.md.off` and back, and guarantees at most one style file is active. If you are reading this file, AST100 is on for this report. Apply the table below. If `references/ast100.md` is missing from the visual-report skill directory, it is off. Write in the report's normal voice per the rest of this skill and skip this file entirely.
+
+## Rules to apply while drafting
+
+| Rule | Do | Don't |
+|---|---|---|
+| One word, one meaning | Pick one verb or noun per concept and reuse it | Rotate synonyms for the same idea ("remove" / "delete" / "clear") |
+| Active voice | "The sync job failed twice." | "The job was failed by..." or a passive with no actor |
+| Simple tense | "The check ran at 9am and failed." | "The check has been running" / "had failed" |
+| One idea per sentence | Split compound claims into separate sentences | "X happened and also Y happened, which caused Z" |
+| Sentence length | Instructions and steps: 20 words or fewer. Description: 25 or fewer | Long sentences built from subordinate clauses |
+| Noun clusters | 3 stacked words at most ("auth token refresh") | 4 or more ("multi factor auth token refresh service") |
+| No ellipsis | Keep subject, verb, and article explicit | Drop words to save space |
+| Paragraph limits | One topic per paragraph, 6 sentences at most | Paragraphs that cover more than one topic |
+| Lists for sequences | A numbered or bulleted list for 3 or more steps or conditions | A sequence buried in prose |
+| Plain words | A common, short word | A formal or rare word when a plain one means the same thing |
+
+## What to leave untouched
+
+- Code, commands, config values, log lines: verbatim.
+- Proper nouns, product names, error strings: verbatim.
+- Numbers, dates, metrics: as measured.
+
+## How to apply it
+
+1. Draft the point first. Then check it against the table above, sentence by sentence.
+2. Fix a violation without losing a fact, a condition, or an exception.
+3. If a sentence already complies, leave it. Do not simplify a sentence that is already clear.
+
+Run this pass together with the `prose-style` audit already required before a report ships, not as a separate pass.
