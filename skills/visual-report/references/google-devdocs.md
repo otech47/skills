@@ -1,4 +1,6 @@
-# Google developer documentation style (developers.google.com/style)
+# Google developer documentation style
+
+This file is the whole rule set, transcribed from developers.google.com/style. It is offline and self-contained. Do not fetch that site, and do not search for the guide: the table below is what applies, and a network call would only slow the report down.
 
 Applies to the prose in a visual report: the thesis, body copy, callouts, captions, table cells, headings, and summaries. It does not apply to code, commands, config values, log lines, proper nouns, or numbers. Those stay verbatim.
 
