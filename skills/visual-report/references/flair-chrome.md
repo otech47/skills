@@ -11,7 +11,7 @@ One corner ornament (a ring, a pulsing gem, three twinkling sparks), a rolled ac
 **It carries no information, so it can never be wrong, and it costs no vertical space, so it can never push the thesis, the hero diagram, or anything else down the page.**
 
 Concretely:
-- Absolutely positioned, anchored near the top of the page. Not `position: fixed`. It scrolls away with the rest of the page instead of staying pinned to the viewport, and it never occupies a row in the layout.
+- Fixed-position, pinned to the corner of the viewport so it floats with you as you scroll. It never occupies a row in the layout.
 - No face, no eyes, no anthropomorphism. A ring, a gem, and three sparks, so there is nothing on the page that could be misread as a name, an opinion, or a reaction to anything.
 - The colophon quote is a joke, not a citation. The italic quote next to a real name already signals a riff, so it needs no hedge word to say so.
 - The `--good` and `--warn` colors never roll. Only `--accent` and `--accent-soft` do. A warning that changed color between reports would stop meaning "warning."
@@ -37,7 +37,7 @@ Add to the `<style>` block, inside `:root` and its dark-mode block, replacing th
 Add these rules, once, anywhere in `<style>`:
 
 ```css
-.flair-mark { position: absolute; top: 14px; right: 14px; width: 48px; height: 48px; pointer-events: none; animation: flbob BOB_DURs ease-in-out infinite; filter: drop-shadow(0 2px 6px rgba(0,0,0,.18)); }
+.flair-mark { position: fixed; top: 14px; right: 14px; width: 48px; height: 48px; pointer-events: none; animation: flbob BOB_DURs ease-in-out infinite; filter: drop-shadow(0 2px 6px rgba(0,0,0,.18)); }
 .flair-ring { animation: flspin RING_SPIN_DURs linear infinite RING_SPIN_DIR; transform-origin: center; }
 .flair-gem { animation: flpulse GEM_PULSE_DURs ease-in-out infinite; transform-origin: center; }
 .flair-spark { animation-name: fltwinkle; animation-timing-function: ease-in-out; animation-iteration-count: infinite; transform-origin: center; }
@@ -90,7 +90,7 @@ Add right after the closing `</main>` tag. Nothing sits below it, so it costs no
 
 ## Step 3: the colophon quote
 
-Think of a real scientist, philosopher, mathematician, or artist, whoever comes to mind, not from a list. Recall the shape of one thing they are known for saying. Bend it one notch off so it lands somewhere between witty and absurd, while staying close enough that the original is still recognizable. Attribute it to the real name, plain, no hedge word: the italic quote next to a name already reads as a riff, not a citation.
+Think of a real scientist, philosopher, mathematician, or artist, whoever comes to mind, not from a list. Recall the shape of one thing they are known for saying. Bend it one notch off so it lands somewhere between witty and absurd, while staying close enough that the original is still recognizable. Attribute it to the real name, with no hedge word. The italic quote next to a name already reads as a riff, not a citation.
 
 Three worked examples, for calibration only. Never reuse one of these, and never reuse a thinker from a previous report:
 
