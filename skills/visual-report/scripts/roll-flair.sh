@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Real entropy for one report's decorative chrome (report-flair): a corner
-# badge, a corner mascot, and the accent hue they share. Run this once per
-# report, right before you fill in the flair snippet from
-# references/flair-chrome.md. Every number below comes from the OS CSPRNG via
-# python's random.SystemRandom, not from a hash of the title and not from a
-# fixed list, so it cannot be pattern-matched across reports. Prints
-# shell-assignable KEY=VALUE lines; read them, do not hand-derive them.
+# Real entropy for one report's decorative chrome (report-flair): the corner
+# ornament (a ring, a pulsing gem, three twinkling sparks) and the accent hue
+# it shares with the rest of the page. Run this once per report, right before
+# you fill in the flair snippet from references/flair-chrome.md. Every number
+# below comes from the OS CSPRNG via python's random.SystemRandom, not from a
+# hash of the title and not from a fixed list, so it cannot be pattern-matched
+# across reports. Prints shell-assignable KEY=VALUE lines; read them, do not
+# hand-derive them.
 set -euo pipefail
 
 command -v python3 >/dev/null 2>&1 || { echo "roll-flair: python3 not found" >&2; exit 1; }
@@ -20,44 +21,40 @@ r = random.SystemRandom()
 # and pink: wide enough range, still bounded and controlled.
 hue = r.randint(170, 340)
 
-badge_radius   = r.randint(16, 20)
-badge_dot      = round(r.uniform(3, 6), 1)
-badge_rotation = r.choice([0, 45])
-badge_stroke   = round(r.uniform(1.2, 2.2), 1)
-badge_dash     = r.choice(["none", "3 3", "2 4", "5 2"])
-badge_spin_dur = round(r.uniform(18, 40), 1)
-badge_spin_dir = r.choice(["normal", "reverse"])
-badge_pulse    = round(r.uniform(2.2, 4.0), 1)
+ring_stroke   = round(r.uniform(1.3, 2.2), 1)
+ring_dash     = r.choice(["none", "3 3", "2 4", "5 2", "6 3"])
+ring_spin_dur = round(r.uniform(18, 42), 1)
+ring_spin_dir = r.choice(["normal", "reverse"])
 
-masc_rx     = r.randint(17, 21)
-masc_ry     = r.randint(14, 18)
-eye_dx      = r.randint(5, 8)
-eye_dy      = r.randint(18, 24)
-eye_r       = round(r.uniform(2.2, 3.4), 1)
-mouth_y     = r.randint(32, 40)
-blink_dur   = round(r.uniform(3.2, 6.0), 1)
-blink_delay = round(r.uniform(0.0, 1.5), 2)
-bob_dur     = round(r.uniform(3.0, 6.0), 1)
-bob_amp     = round(r.uniform(1.0, 2.2), 1)
+gem_half      = r.randint(7, 10)          # gem_x/gem_wh are precomputed, paste as-is
+gem_x         = 24 - gem_half
+gem_wh        = 2 * gem_half
+gem_pulse_dur = round(r.uniform(2.2, 4.2), 1)
+
+spark_rot     = r.randint(0, 359)
+spark1_dur, spark1_delay = round(r.uniform(1.4, 3.0), 1), round(r.uniform(0, 2.0), 2)
+spark2_dur, spark2_delay = round(r.uniform(1.4, 3.0), 1), round(r.uniform(0, 2.0), 2)
+spark3_dur, spark3_delay = round(r.uniform(1.4, 3.0), 1), round(r.uniform(0, 2.0), 2)
+
+bob_dur = round(r.uniform(3.0, 6.0), 1)
+bob_amp = round(r.uniform(1.0, 2.4), 1)
 
 for k, v in [
     ("HUE", hue),
-    ("BADGE_RADIUS", badge_radius),
-    ("BADGE_DOT", badge_dot),
-    ("BADGE_ROTATION", badge_rotation),
-    ("BADGE_STROKE", badge_stroke),
-    ("BADGE_DASH", badge_dash),
-    ("BADGE_SPIN_DUR", badge_spin_dur),
-    ("BADGE_SPIN_DIR", badge_spin_dir),
-    ("BADGE_PULSE", badge_pulse),
-    ("MASC_RX", masc_rx),
-    ("MASC_RY", masc_ry),
-    ("EYE_DX", eye_dx),
-    ("EYE_DY", eye_dy),
-    ("EYE_R", eye_r),
-    ("MOUTH_Y", mouth_y),
-    ("BLINK_DUR", blink_dur),
-    ("BLINK_DELAY", blink_delay),
+    ("RING_STROKE", ring_stroke),
+    ("RING_DASH", ring_dash),
+    ("RING_SPIN_DUR", ring_spin_dur),
+    ("RING_SPIN_DIR", ring_spin_dir),
+    ("GEM_X", gem_x),
+    ("GEM_WH", gem_wh),
+    ("GEM_PULSE_DUR", gem_pulse_dur),
+    ("SPARK_ROT", spark_rot),
+    ("SPARK1_DUR", spark1_dur),
+    ("SPARK1_DELAY", spark1_delay),
+    ("SPARK2_DUR", spark2_dur),
+    ("SPARK2_DELAY", spark2_delay),
+    ("SPARK3_DUR", spark3_dur),
+    ("SPARK3_DELAY", spark3_delay),
     ("BOB_DUR", bob_dur),
     ("BOB_AMP", bob_amp),
 ]:
