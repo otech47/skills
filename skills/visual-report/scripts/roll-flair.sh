@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
-# Real entropy for one report's decorative chrome (report-flair): the corner
-# ornament (a ring, a pulsing gem, three twinkling sparks) and the accent hue
-# it shares with the rest of the page. Run this once per report, right before
-# you fill in the flair snippet from references/flair-chrome.md. Every number
-# below comes from the OS CSPRNG via python's random.SystemRandom, not from a
-# hash of the title and not from a fixed list, so it cannot be pattern-matched
-# across reports. Prints shell-assignable KEY=VALUE lines; read them, do not
-# hand-derive them.
+# Rolls decorative-chrome parameters from the OS CSPRNG (random.SystemRandom),
+# not a hash or a fixed list, so results can't be pattern-matched across reports.
+# Run once per report; see references/flair-chrome.md for how the output is used.
 set -euo pipefail
 
 command -v python3 >/dev/null 2>&1 || { echo "roll-flair: python3 not found" >&2; exit 1; }
@@ -15,10 +10,8 @@ python3 - <<'PY'
 import random
 r = random.SystemRandom()
 
-# Hue stays out of the warn (red/orange) and good (green) bands, so a rolled
-# color can never be mistaken for the report's semantic warning or success
-# color. 170-340 covers teal, cyan, blue, indigo, violet, purple, magenta,
-# and pink: wide enough range, still bounded and controlled.
+# Keep hue out of the warn (red/orange) and good (green) bands, so a rolled
+# color can't be mistaken for those semantic colors.
 hue = r.randint(170, 340)
 
 ring_stroke   = round(r.uniform(1.3, 2.2), 1)
@@ -26,7 +19,7 @@ ring_dash     = r.choice(["none", "3 3", "2 4", "5 2", "6 3"])
 ring_spin_dur = round(r.uniform(18, 42), 1)
 ring_spin_dir = r.choice(["normal", "reverse"])
 
-gem_half      = r.randint(7, 10)          # gem_x/gem_wh are precomputed, paste as-is
+gem_half      = r.randint(7, 10)
 gem_x         = 24 - gem_half
 gem_wh        = 2 * gem_half
 gem_pulse_dur = round(r.uniform(2.2, 4.2), 1)
