@@ -13,7 +13,7 @@ One corner ornament (a ring, a pulsing gem, three twinkling sparks), a rolled ac
 Concretely:
 - Absolutely positioned, anchored near the top of the page. Not `position: fixed`. It scrolls away with the rest of the page instead of staying pinned to the viewport, and it never occupies a row in the layout.
 - No face, no eyes, no anthropomorphism. A ring, a gem, and three sparks, so there is nothing on the page that could be misread as a name, an opinion, or a reaction to anything.
-- The colophon quote is a joke, not a citation. It always carries a hedge word that flags it as approximate, so nobody mistakes it for a real quote.
+- The colophon quote is a joke, not a citation. The italic quote next to a real name already signals a riff, so it needs no hedge word to say so.
 - The `--good` and `--warn` colors never roll. Only `--accent` and `--accent-soft` do. A warning that changed color between reports would stop meaning "warning."
 - This whole step is independent of the report's content. Do it yourself, inline, right before or after writing the report. Do not spend a subagent call on it. The fixed overhead of spinning one up (system prompt, tool schemas) is larger than the few hundred tokens this step actually costs. Save the subagent pattern for flair heavy enough to be worth parallelizing. This is not that.
 
@@ -84,19 +84,19 @@ Add right after the closing `</main>` tag. Nothing sits below it, so it costs no
 <div class="colophon">
   <svg width="18" height="18" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="3" transform="rotate(45 9 9)" class="node-accent"></rect></svg>
   <p class="mark">"YOUR OFF-BY-ONE QUOTE HERE"</p>
-  <p class="attrib">NAME, HEDGE WORD</p>
+  <p class="attrib">NAME</p>
 </div>
 ```
 
 ## Step 3: the colophon quote
 
-Think of a real scientist, philosopher, mathematician, or artist, whoever comes to mind, not from a list. Recall the shape of one thing they are known for saying. Bend it one notch off so it lands somewhere between witty and absurd, while staying close enough that the original is still recognizable. Attribute it to the real name, followed by a hedge word (`roughly`, `kinda`, `allegedly`, `more or less`, `probably`, `sort of`) so nobody mistakes it for the real line.
+Think of a real scientist, philosopher, mathematician, or artist, whoever comes to mind, not from a list. Recall the shape of one thing they are known for saying. Bend it one notch off so it lands somewhere between witty and absurd, while staying close enough that the original is still recognizable. Attribute it to the real name, plain, no hedge word: the italic quote next to a name already reads as a riff, not a citation.
 
 Three worked examples, for calibration only. Never reuse one of these, and never reuse a thinker from a previous report:
 
-- "i think, therefore i'm billable" / descartes, roughly
-- "if i've seen further, it's because i climbed on a really tall intern" / newton, allegedly
-- "nothing in life is to be feared, except regex" / curie, kinda
+- "i think, therefore i'm billable" / descartes
+- "if i've seen further, it's because i climbed on a really tall intern" / newton
+- "nothing in life is to be feared, except regex" / curie
 
 This is the one piece of the mechanism that is genuinely nondeterministic rather than randomized. The numbers came from `roll-flair.sh`. This quote comes from you, fresh, every time.
 
