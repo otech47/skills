@@ -374,9 +374,7 @@ QUOTES = [
 
 
 # An agent asked to "pick a famous quote" returns the same thirty every time, so
-# letting it choose freely gives less spread than a uniform draw from QUOTES, not
-# more. Rolling a constraint here supplies the entropy the agent lacks; the agent
-# supplies the range the pool lacks. Wire it up with --brief and --quote/--author.
+# free choice gives less spread than a uniform draw from QUOTES, not more.
 DISCIPLINES = [
     "physicist", "mathematician", "poet", "novelist", "playwright", "philosopher",
     "composer", "jazz musician", "painter", "sculptor", "architect", "choreographer",
@@ -419,6 +417,8 @@ def build(quote=None, author=None):
     if not (quote and author):
         quote, author = r.choice(QUOTES)
 
+    # No filter on .flair-mark: it renders the animating subtree to an offscreen
+    # texture, which the children then invalidate every frame.
     css = f"""<style id="flair">
   :root {{ --accent: {la}; --accent-soft: {ls}; --flair2: {l2}; }}
   @media (prefers-color-scheme: dark) {{

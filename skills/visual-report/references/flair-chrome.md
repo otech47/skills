@@ -33,7 +33,9 @@ scripts/roll-flair.sh --brief
 scripts/roll-flair.sh --apply reports/r.html --quote "..." --author "..."
 ```
 
-The split matters. Asked to pick a famous quote unaided, you return the same thirty every time, so free choice gives less spread than a uniform draw from the pool, not more. The roll supplies entropy you do not have; you supply range the pool does not have. Two rules when you fill a brief: the quote has to be real and correctly attributed, and if you cannot place a line you are confident in, drop the flags and let the pool answer. A plausible-sounding misquote is worse than a repeat.
+The split matters. Asked to pick a famous quote unaided, you return the same thirty every time, so free choice gives less spread than a uniform draw from the pool, not more. The roll supplies entropy you do not have, and you supply range the pool does not have.
+
+Two rules when you fill a brief. The quote has to be real and correctly attributed. If you cannot place a line you are confident in, drop the flags and let the pool answer, since a plausible-sounding misquote is worse than a repeat.
 
 ## Animation performance
 
