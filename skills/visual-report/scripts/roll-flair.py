@@ -373,23 +373,63 @@ QUOTES = [
 ]
 
 
-def build():
+# An agent asked to "pick a famous quote" returns the same thirty every time, so
+# letting it choose freely gives less spread than a uniform draw from QUOTES, not
+# more. Rolling a constraint here supplies the entropy the agent lacks; the agent
+# supplies the range the pool lacks. Wire it up with --brief and --quote/--author.
+DISCIPLINES = [
+    "physicist", "mathematician", "poet", "novelist", "playwright", "philosopher",
+    "composer", "jazz musician", "painter", "sculptor", "architect", "choreographer",
+    "film director", "photographer", "biologist", "chemist", "astronomer",
+    "economist", "historian", "anthropologist", "civil rights organizer",
+    "labor organizer", "chess player", "athlete", "coach", "comedian", "essayist",
+    "translator", "naturalist", "engineer", "aviator", "explorer", "physician",
+    "psychologist", "linguist", "war correspondent", "cryptographer", "potter",
+    "printmaker", "textile artist", "cartographer", "botanist", "diarist",
+]
+ERAS = [
+    "ancient", "medieval", "renaissance", "17th century", "18th century",
+    "19th century", "early 20th century", "mid 20th century", "late 20th century",
+    "21st century",
+]
+REGIONS = [
+    "west africa", "south asia", "east asia", "latin america", "the middle east",
+    "eastern europe", "the nordic countries", "the caribbean", "southeast asia",
+    "indigenous north america", "southern europe", "the british isles",
+]
+THEMES = [
+    "doubt", "craft", "failure", "patience", "curiosity", "solitude",
+    "collaboration", "time", "attention", "beginnings", "endings", "constraint",
+    "improvisation", "courage", "humility", "obsession", "luck", "revision",
+]
+
+
+def brief():
+    who = f"{r.choice(ERAS)} {r.choice(DISCIPLINES)}"
+    if r.random() < 0.45:
+        who += f" from {r.choice(REGIONS)}"
+    return f"a real, correctly attributed line from {who}, on {r.choice(THEMES)}"
+
+
+def build(quote=None, author=None):
     cols = roll_colors()
     la, ls, l2 = cols["light"]
     da, ds, d2 = cols["dark"]
     svg, bob_amp = build_ornament()
-    quote, author = r.choice(QUOTES)
+    if not (quote and author):
+        quote, author = r.choice(QUOTES)
 
     css = f"""<style id="flair">
   :root {{ --accent: {la}; --accent-soft: {ls}; --flair2: {l2}; }}
   @media (prefers-color-scheme: dark) {{
     :root {{ --accent: {da}; --accent-soft: {ds}; --flair2: {d2}; }}
   }}
-  .flair-mark {{ position: fixed; top: 14px; right: 14px; width: 52px; height: 52px; pointer-events: none; z-index: 5; filter: drop-shadow(0 2px 7px rgba(0,0,0,.2)); }}
+  .flair-mark {{ position: fixed; top: 14px; right: 14px; width: 52px; height: 52px; pointer-events: none; z-index: 5; contain: strict; }}
   @keyframes flspin {{ to {{ transform: rotate(360deg); }} }}
   @keyframes flpulse {{ 0%, 100% {{ opacity: 1; transform: scale(1); }} 50% {{ opacity: .55; transform: scale(.82); }} }}
   @keyframes fltwinkle {{ 0%, 100% {{ opacity: .18; transform: scale(.65); }} 50% {{ opacity: 1; transform: scale(1.2); }} }}
   @keyframes flbob {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-{bob_amp}px); }} }}
+  @media (prefers-reduced-motion: reduce) {{ .flair-mark, .flair-mark * {{ animation: none !important; }} }}
   .colophon {{ display: flex; flex-direction: column; align-items: center; gap: .3rem; margin: 2.6rem 0 0; opacity: .8; text-align: center; }}
   .colophon .mark {{ color: var(--ink-soft); font-size: .85rem; font-style: italic; max-width: 34rem; margin: 0; }}
   .colophon .attrib {{ color: var(--ink-faint); font-size: .75rem; margin: 0; }}
@@ -419,11 +459,11 @@ def strip_flair(html):
     return html
 
 
-def apply_to(path):
+def apply_to(path, quote=None, author=None):
     with open(path, encoding="utf-8") as fh:
         html = fh.read()
     html = strip_flair(html)
-    css, fav, svg, colophon, quote, author = build()
+    css, fav, svg, colophon, quote, author = build(quote, author)
 
     if "</head>" not in html or "</main>" not in html:
         sys.exit(f"roll-flair: {path} has no </head> or </main>, not a report")
@@ -441,12 +481,30 @@ def apply_to(path):
     print(f'flair applied: {path}\n  quote: "{quote}" / {author}')
 
 
+def _opt(args, name):
+    if name in args:
+        i = args.index(name)
+        if i + 1 >= len(args):
+            sys.exit(f"roll-flair: {name} needs a value")
+        v = args[i + 1]
+        del args[i:i + 2]
+        return v
+    return None
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if args and args[0] == "--apply":
+    q = _opt(args, "--quote")
+    a = _opt(args, "--author")
+    if bool(q) != bool(a):
+        sys.exit("roll-flair: --quote and --author go together")
+
+    if args and args[0] == "--brief":
+        print(brief())
+    elif args and args[0] == "--apply":
         if len(args) != 2:
-            sys.exit("usage: roll-flair.sh --apply <report.html>")
-        apply_to(args[1])
+            sys.exit("usage: roll-flair.sh --apply <report.html> [--quote Q --author A]")
+        apply_to(args[1], q, a)
     elif args and args[0] == "--strip":
         if len(args) != 2:
             sys.exit("usage: roll-flair.sh --strip <report.html>")
@@ -456,7 +514,7 @@ if __name__ == "__main__":
             fh.write(out)
         print(f"flair stripped: {args[1]}")
     else:
-        css, fav, svg, colophon, quote, author = build()
+        css, fav, svg, colophon, quote, author = build(q, a)
         print(fav)
         print(css)
         print(svg)
