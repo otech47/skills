@@ -12,8 +12,6 @@ LIGHT_BG = (251, 251, 250)
 DARK_BG = (22, 22, 26)
 
 
-# ---------------------------------------------------------------- color
-
 def hsl_to_rgb(h, s, l):
     h, s, l = h / 360.0, s / 100.0, l / 100.0
     if s == 0:
@@ -49,11 +47,8 @@ def contrast(a, b):
     return (la + 0.05) / (lb + 0.05)
 
 
-# Equal-width in degrees is not equal-width to the eye: purple through pink spans
-# far more of the wheel than teal or cyan, so uniform sampling makes most reports
-# look violet. Sampling a band first, then a hue inside it, spreads the rolls
-# evenly across what a reader actually perceives as different colors. The set of
-# bands only balances the distribution; the hue itself stays continuous.
+# Purple through pink spans far more degrees than teal or cyan, so sampling hue
+# uniformly makes most reports come out violet. Pick a band first, then a hue in it.
 HUE_BANDS = [(168, 184), (184, 198), (198, 212), (212, 230), (230, 248),
              (248, 264), (264, 282), (282, 298), (298, 314), (314, 338)]
 
@@ -64,9 +59,8 @@ def _hue():
 
 
 def _fit(h, s, start, bg, target, step):
-    """Walk lightness until the color clears the contrast target. Cyan needs to be
-    much darker than violet to pass on white, so rejecting failed samples instead
-    of adjusting them would quietly drop whole hue bands from the distribution."""
+    """Cyan must be far darker than violet to pass on white, so reject-and-retry
+    would silently drop whole hue bands. Adjust the sample, never discard it."""
     l = start
     while 14 <= l <= 94:
         if contrast(hsl_to_rgb(h, s, l), bg) >= target:
@@ -76,9 +70,8 @@ def _fit(h, s, start, bg, target, step):
 
 
 def roll_colors():
-    """Hue avoids the warn (red/orange) and good (green) bands so a rolled color is
-    never mistaken for a semantic one. Saturation rolls freely; lightness is fitted
-    per hue so every rolled color clears 4.5:1 on both backgrounds."""
+    """Stays out of the warn (red/orange) and good (green) bands, so a decorative
+    color is never mistaken for a semantic one. Guarantees 4.5:1 on both backgrounds."""
     while True:
         h1 = _hue()
         s_l, s_d = r.randint(52, 95), r.randint(62, 100)
@@ -107,8 +100,6 @@ def roll_colors():
     }
 
 
-# ---------------------------------------------------------------- geometry
-
 C = 24.0
 
 
@@ -130,8 +121,7 @@ def star(cx, cy, r_out, r_in, n, rot=0.0):
 
 
 def shape_svg(kind, cx, cy, size, rot, fill, stroke, sw, anim=""):
-    """One glyph. Every branch returns a single element so callers can wrap it.
-    anim is spliced ahead of the paint properties in the same style attribute."""
+    """Every branch must return exactly one element; callers wrap the result."""
     style = f'{anim}fill:{fill};stroke:{stroke};stroke-width:{sw}'
     common = f'style="{style}"'
     if kind == "circle":
@@ -165,14 +155,12 @@ CORE_SHAPES = ["circle", "ring", "square", "poly3", "poly5", "poly6", "poly8",
 
 
 def build_ornament():
-    """Composition varies structurally, not just in its numbers: how many orbit
-    rings, whether they are full circles or arcs, what the core is, how many
-    satellites ride around it, and what shape each one is."""
+    """Rolls the composition itself, not just the numbers in a fixed one. Keep it
+    that way; a fixed layout with jittered values is recognizable after a few reports."""
     parts = []
     fill_a, fill_b = "var(--accent)", "var(--flair2)"
     soft = "var(--accent-soft)"
 
-    # orbit rings
     n_rings = r.choice([1, 1, 2, 2, 3])
     radii = r.sample([9.5, 12.5, 15.5, 18.0, 20.5], n_rings)
     for rad in sorted(radii):
@@ -184,7 +172,6 @@ def build_ornament():
         anim = (f'transform-box:fill-box;transform-origin:center;'
                 f'animation:flspin {dur}s linear infinite {direction};opacity:{op}')
         if r.random() < 0.35:
-            # arc instead of a full ring
             sweep = r.uniform(90, 280)
             a0 = r.uniform(0, 360)
             a1 = a0 + sweep
@@ -200,7 +187,6 @@ def build_ornament():
                 f'<circle cx="{C}" cy="{C}" r="{rad:.2f}" '
                 f'style="fill:none;stroke:{col};stroke-width:{sw};stroke-dasharray:{dash};{anim}"/>')
 
-    # core
     core = r.choice(CORE_SHAPES)
     if core != "none":
         size = round(r.uniform(4.0, 8.5), 1)
@@ -221,7 +207,6 @@ def build_ornament():
                     f'animation:{",".join(anims)};')
         parts.append(shape_svg(core, C, C, size, rot, fill, stroke, sw, anim))
 
-    # satellites
     n_sat = r.choice([0, 2, 3, 3, 4, 5, 6])
     if n_sat:
         orbit_r = round(r.uniform(13.0, 20.5), 1)
@@ -255,8 +240,6 @@ def build_ornament():
     return (f'<svg class="flair-mark" viewBox="0 0 48 48" role="presentation" '
             f'style="animation:flbob {bob_dur}s ease-in-out infinite">\n  {body}\n</svg>'), bob_amp
 
-
-# ---------------------------------------------------------------- quotes
 
 QUOTES = [
     ("The good thing about science is that it's true whether or not you believe in it.", "neil degrasse tyson"),
@@ -390,8 +373,6 @@ QUOTES = [
 ]
 
 
-# ---------------------------------------------------------------- assembly
-
 def build():
     cols = roll_colors()
     la, ls, l2 = cols["light"]
@@ -429,9 +410,8 @@ def build():
 
 
 def strip_flair(html):
-    """Each pattern eats exactly the whitespace apply_to added around its block, so
-    repeated apply/strip cycles leave the file byte-identical instead of growing a
-    run of blank lines."""
+    """Each pattern eats exactly the newlines apply_to adds. Change one side and
+    repeated apply/strip cycles start growing blank lines."""
     html = re.sub(r'[ \t]*<link rel="icon" data-flair[^>]*>\n?', "", html)
     html = re.sub(r'[ \t]*<style id="flair">.*?</style>\n?', "", html, flags=re.S)
     html = re.sub(r'\n[ \t]*<svg class="flair-mark".*?</svg>', "", html, flags=re.S)
