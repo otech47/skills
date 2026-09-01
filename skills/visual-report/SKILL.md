@@ -148,9 +148,9 @@ Then read both screenshots, because the part that matters is not mechanical. Ask
 
 The report stays local. Hand back the file path, `open` it if that is what was asked for, and stop there. Publishing is never part of finishing a report.
 
-Publishing is a separate act with its own ask. `surge-deploy` puts the report on a public URL that anyone holding the link can read, and `gh-upload` puts an image of it on a PR or issue. Reach for either only when the user asks to publish this report, in the request you are answering right now. Two things that are not that ask:
+`surge-deploy` puts the report on a public URL that anyone holding the link can read, and `gh-upload` puts an image of it on a PR or issue. Reach for either only when the user asks to publish this report, in the request you are answering right now. Two things that are not that ask:
 
 - "open it", "show me", "send it over", "finish it". Those mean the local file.
-- a deploy the user asked for earlier in the session, for a different report. That instruction died with the artifact it named, and a compaction summary still quoting it is recording history, not carrying a standing order forward.
+- a deploy the user asked for earlier in the session, for a different report. That instruction died with the artifact it named, and a compaction summary still quoting it is recording history, not issuing a standing order.
 
 If a report looks worth a public link, say so in one line and let him answer. Most are read once and pruned by the scratch retention window.
