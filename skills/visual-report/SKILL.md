@@ -125,6 +125,20 @@ A reader who catches one of these stops trusting everything above it. So after w
 - One prose style guide may be switched on for reports, and it lives in this skill's `references/` directory. Look for `google-devdocs.md` (Google developer documentation style, the default) or `ast100.md` (ASD-STE100 Simplified Technical English). Whichever one is present is on, so read it fresh and run its rules in the same audit pass. A file renamed to `.off` is off. If both are off, write in the normal voice above and skip this entirely. If both are somehow present, apply `google-devdocs.md`. The knob is `report-style google|ast100|off|status`; never edit the files to switch it.
 - for optional decorative chrome, read [references/flair-chrome.md](references/flair-chrome.md). that file is the source of truth for flair behavior and toggles.
 
+## Read the recorded effort
+
+Claude Code records `effort` and `perTurnEffort` on assistant rows in its session JSONL. Read those fields before writing the report signature. A non-null `perTurnEffort` overrides `effort` for that turn. This setting belongs to the harness; the model does not reliably know it from introspection.
+
+Use the exact session ID from the harness or the scratch manifest. Locate its file under `~/.claude/projects/<project>/<session-id>.jsonl`, then run:
+
+```bash
+python3 scripts/read-session-effort.py /path/to/session.jsonl
+```
+
+The reader prints model IDs and recorded effort levels only. For a historical report, pass `--before` with its original finalization timestamp and timezone. If levels changed, preserve that fact, for example `high / xhigh effort`. Read each contributor's own transcript separately; never give a contributor the creator's effort by assumption.
+
+For other harnesses, use their explicit session metadata. Current settings files and environment defaults are not proof of a past session's effective effort. Use `unknown` only when the exact transcript or its effort fields are unavailable, and record that reason in the scratch manifest. Do not substitute a nearby session, infer a level from token counts, or publish transcript contents.
+
 ## Self-audit before you hand it over
 
 Own the render loop rather than trusting the markup. Run:
