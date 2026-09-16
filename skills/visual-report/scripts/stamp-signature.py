@@ -63,10 +63,9 @@ def stamp(source, model=None, also_models=(), session_tokens=None, context_token
         lines.append(f"<div>{escape(role)} by <strong>{escape(name)}</strong> &middot; {escape(effort_label)}</div>")
     date = finalized_at or datetime.now().astimezone()
     timestamp = date.isoformat(timespec="minutes")
-    display = date.astimezone() if finalized_at else date
-    month = ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")[display.month - 1]
-    human_date = f"{display.day} {month} {display.year}"
-    human_time = display.strftime("%H:%M %Z").strip()
+    month = ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")[date.month - 1]
+    human_date = f"{date.day} {month} {date.year}"
+    human_time = date.strftime("%H:%M %Z").strip()
     lines.append(f'<div style="margin-top:.35rem">session: {estimate(session_tokens)} &middot; context: {estimate(context_tokens)}</div>')
     lines.append(f'<div><time datetime="{escape(timestamp, quote=True)}">{human_date} &middot; {escape(human_time)}</time></div>')
     footer = (
@@ -97,6 +96,7 @@ def main():
             finalized_at = datetime.fromisoformat(args.finalized_at.replace("Z", "+00:00"))
             if finalized_at.tzinfo is None:
                 raise ValueError("--finalized-at needs a timezone")
+            finalized_at = finalized_at.astimezone()
         source = args.report.read_text(encoding="utf-8")
         result = stamp(source, args.model, args.also_model, args.session_tokens, args.context_tokens, finalized_at=finalized_at, effort=args.effort, contributors=args.contributor)
         args.report.write_text(result, encoding="utf-8")
