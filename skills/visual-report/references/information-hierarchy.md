@@ -49,6 +49,15 @@ Two rules that decide whether the diagram survives contact with a real reader:
 
 **Every label must be a term the reader already has.** The diagram usually arrives before the prose that would define its nouns, so an unglossed token here is worse than anywhere else on the page. If a box has to be called `gatewayd`, give it a four-word sublabel saying what that is.
 
+### authoring checks before rendering
+
+- keep text inside the SVG viewBox with visible margins.
+- route connectors clear of labels and stop arrowheads before text.
+- let long links wrap within their container.
+- use block or inline-block layout for bars that need width and height.
+- preserve readable diagram text on narrow screens with a scrolling container.
+- check that diagram claims agree with the prose and source facts.
+
 ### Hero flow / pipeline
 For a process, a data path, or a sequence of stages. Left to right.
 

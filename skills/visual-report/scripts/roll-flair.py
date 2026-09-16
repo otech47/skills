@@ -58,12 +58,12 @@ def _hue():
     return r.randint(lo, hi)
 
 
-def _fit(h, s, start, bg, target, step):
+def _fit(h, s, start, bg, target, step, *backgrounds):
     """Cyan must be far darker than violet to pass on white, so reject-and-retry
     would silently drop whole hue bands. Adjust the sample, never discard it."""
     l = start
     while 14 <= l <= 94:
-        if contrast(hsl_to_rgb(h, s, l), bg) >= target:
+        if all(contrast(hsl_to_rgb(h, s, l), surface) >= target for surface in (bg, *backgrounds)):
             return l
         l += step
     return None
@@ -71,12 +71,14 @@ def _fit(h, s, start, bg, target, step):
 
 def roll_colors():
     """Stays out of the warn (red/orange) and good (green) bands, so a decorative
-    color is never mistaken for a semantic one. Guarantees 4.5:1 on both backgrounds."""
+    color is never mistaken for a semantic one. Fits text contrast on the page, cards, and accent surfaces."""
     while True:
         h1 = _hue()
         s_l, s_d = r.randint(52, 95), r.randint(62, 100)
-        l_l = _fit(h1, s_l, r.randint(32, 52), LIGHT_BG, 4.5, -1)
-        l_d = _fit(h1, s_d, r.randint(60, 80), DARK_BG, 4.5, 1)
+        soft_l = (h1, r.randint(60, 85), r.randint(93, 96))
+        soft_d = (h1, r.randint(28, 46), r.randint(17, 24))
+        l_l = _fit(h1, s_l, r.randint(32, 52), LIGHT_BG, 4.6, -1, (244, 244, 242), hsl_to_rgb(*soft_l))
+        l_d = _fit(h1, s_d, r.randint(60, 80), DARK_BG, 4.6, 1, (38, 38, 46), hsl_to_rgb(*soft_d))
         if l_l is not None and l_d is not None:
             break
     while True:
@@ -89,12 +91,12 @@ def roll_colors():
     return {
         "light": (
             f"hsl({h1} {s_l}% {l_l}%)",
-            f"hsl({h1} {r.randint(60, 85)}% {r.randint(93, 96)}%)",
+            f"hsl({soft_l[0]} {soft_l[1]}% {soft_l[2]}%)",
             f"hsl({h2} {s2_l}% {l2_l}%)",
         ),
         "dark": (
             f"hsl({h1} {s_d}% {l_d}%)",
-            f"hsl({h1} {r.randint(28, 46)}% {r.randint(17, 24)}%)",
+            f"hsl({soft_d[0]} {soft_d[1]}% {soft_d[2]}%)",
             f"hsl({h2} {s2_d}% {l2_d}%)",
         ),
     }
@@ -430,7 +432,7 @@ def build(quote=None, author=None):
   @keyframes fltwinkle {{ 0%, 100% {{ opacity: .18; transform: scale(.65); }} 50% {{ opacity: 1; transform: scale(1.2); }} }}
   @keyframes flbob {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-{bob_amp}px); }} }}
   @media (prefers-reduced-motion: reduce) {{ .flair-mark, .flair-mark * {{ animation: none !important; }} }}
-  .colophon {{ display: flex; flex-direction: column; align-items: center; gap: .3rem; margin: 2.6rem 0 0; opacity: .8; text-align: center; }}
+  .colophon {{ display: flex; flex-direction: column; align-items: center; gap: .3rem; margin: 2.6rem 0 0; text-align: center; }}
   .colophon .mark {{ color: var(--ink-soft); font-size: .85rem; font-style: italic; max-width: 34rem; margin: 0; }}
   .colophon .attrib {{ color: var(--ink-faint); font-size: .75rem; margin: 0; }}
 </style>"""
@@ -474,6 +476,9 @@ def apply_to(path, quote=None, author=None):
         sys.exit(f"roll-flair: {path} has no <body>")
     html = html[:m.end()] + "\n" + svg + html[m.end():]
     i = html.rfind("</main>")
+    signature = html.find("<!-- report-signature:start -->")
+    if 0 <= signature < i:
+        i = signature
     html = html[:i] + colophon + "\n" + html[i:]
 
     with open(path, "w", encoding="utf-8") as fh:

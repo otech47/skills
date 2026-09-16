@@ -18,10 +18,12 @@ Write no markup yourself, and do not hand-edit what it inserts. The point of the
 
 ## What it adds
 
-- **A rolled color scheme.** Two hues, `--accent` and `--flair2`, plus a matching `--accent-soft`. Saturation rolls freely, and lightness is fitted per hue so every rolled color clears 4.5:1 on both the light and dark background. It overrides the template's palette from a `<style id="flair">` block at the end of `<head>`, so the original values stay in the file untouched.
+- **A rolled color scheme.** Two hues, `--accent` and `--flair2`, plus a matching `--accent-soft`. Saturation rolls freely, and lightness is fitted per hue so the text accent clears 4.5:1 on the page, card, and tinted surfaces in both themes. the decorative secondary color clears 3:1 on the page background. It overrides the template's palette from a `<style id="flair">` block at the end of `<head>`, so the original values stay in the file untouched.
 - **A corner ornament**, fixed to the top right of the viewport, floating there as you scroll. Built from orbit rings or arcs, an optional core glyph, and orbiting satellites, with every count, radius, shape, speed, direction and phase rolled independently.
 - **A favicon** in the rolled hue, so a report is recognizable in a stack of tabs.
-- **A real quote** in a colophon after `</main>`, drawn at random from a wide pool spanning science, literature, philosophy, art, sport and design.
+- **A real quote** in a colophon before `</main>`, drawn at random from a wide pool spanning science, literature, philosophy, art, sport and design.
+
+the required model signature follows the quote. stamp it with `scripts/stamp-signature.py` after the report and flair are final. reapplying flair preserves that order.
 
 ## Reaching past the quote pool
 

@@ -45,15 +45,17 @@ Full method, diagram patterns, and worked failure-and-fix examples: `references/
 
 4. **Write the content by descending the altitudes, not by transcribing your terminal answer.** The report is not your draft answer with tags around it. Re-shape it: lead with the picture, push the specifics down into collapsible detail, cut the process narration.
 
-5. **Open it.** `open <path>` on macOS puts it in the default browser, which is the runnable end state the reader wants. In a background or non-interactive run, skip the open and just print the `file://` path.
+5. **Finalize the signature.** Put the report creator first, then other models with their roles and recorded effort levels. Add rough session token use and context length at finalization when available. Stamp the footer below the quote with `scripts/stamp-signature.py` before the final render check. The signature also appears when flair is off. Use the command in the self-audit section.
 
-6. **Hand off in the terminal briefly.** In your terminal reply, give the reader the two-to-four-sentence version plus the path. Do not also paste the full report as text. The point was to get them out of the wall of text; reproducing the wall defeats it. Terminal gets the gist and the link, the page gets the depth.
+6. **Open it.** `open <path>` on macOS puts it in the default browser, which is the runnable end state the reader wants. In a background or non-interactive run, skip the open and just print the `file://` path.
+
+7. **Hand off in the terminal briefly.** In your terminal reply, give the reader the two-to-four-sentence version plus the path. Do not also paste the full report as text. The point was to get them out of the wall of text; reproducing the wall defeats it. Terminal gets the gist and the link, the page gets the depth.
 
 ## Building the visual
 
 The mental-model picture at altitude 2 does more work than anything else on the page, so spend real effort there. Options, cheapest first:
 
-- **Inline SVG**, hand-authored, for the hero diagram: a system shape, a pipeline, a layered stack, a mind map with a few branches. The template ships CSS classes (`.node`, `.node-accent`, `.edge`, `.lbl`) so a hand-drawn SVG picks up the theme and stays legible in dark mode. This is the default because it is self-contained and needs no dependency.
+- **Inline SVG**, hand-authored, for the hero diagram: a system shape, a pipeline, a layered stack, a mind map with a few branches. The template ships CSS classes (`.node`, `.node-accent`, `.edge`, `.svg-lbl`, `.svg-lbl-soft`) so a hand-drawn SVG picks up the theme and stays legible in dark mode. This is the default because it is self-contained and needs no dependency.
 - **HTML + CSS structures** for anything that is really a layout: comparison columns, a timeline, a decision tree, a before/after. Often clearer and less fiddly than SVG.
 - **Mermaid** when the graph is genuinely complex (dense flowcharts, sequence diagrams, state machines). Author in mermaid, then **freeze it**: run `scripts/freeze-diagrams.sh <src.html> <out.html>`, which renders every diagram to static inline SVG and strips the runtime. Never ship the mermaid library inlined. Measured on real reports: the runtime is ~3.2MB against ~15KB of actual content, so 99.5% of the file is a library, the page shows raw `flowchart TD` source until the JS parses, and a half-finished build leaves a `<!--MERMAID-LIB-HERE-->` placeholder that throws a ReferenceError and dumps diagram source into the page. Freezing gives the same picture at ~8KB with no JavaScript at all.
 
@@ -103,7 +105,7 @@ Some material needs no help: "the new repo layout" over a file tree is already s
 The report gets forwarded, reopened weeks later, and read by people who were never in your conversation. Write it for them, which means a few habits have to go:
 
 - No second person aimed at one participant, and no correcting a belief the reader never held. "One correction before you check this against your understanding" and "the coverage gap you predicted" are addressed to someone who is not there.
-- No undefined "today", "currently", or "the plan we built". Stamp the date and what the report was made from. A forensic or status document with no date is not usable later.
+- No undefined "today", "currently", or "the plan we built". Put the generation timestamp in the signature footer. Keep dates that define the evidence period beside the relevant facts.
 - Link the things you reference. Reports routinely cite PR numbers, issue ids, and file paths as inert text while asking the reader to go verify them. Make them real links.
 
 ## The thesis has to survive the body
@@ -125,9 +127,20 @@ A reader who catches one of these stops trusting everything above it. So after w
 - One prose style guide may be switched on for reports, and it lives in this skill's `references/` directory. Look for `google-devdocs.md` (Google developer documentation style, the default) or `ast100.md` (ASD-STE100 Simplified Technical English). Whichever one is present is on, so read it fresh and run its rules in the same audit pass. A file renamed to `.off` is off. If both are off, write in the normal voice above and skip this entirely. If both are somehow present, apply `google-devdocs.md`. The knob is `report-style google|ast100|off|status`; never edit the files to switch it.
 - for optional decorative chrome, read [references/flair-chrome.md](references/flair-chrome.md). that file is the source of truth for flair behavior and toggles.
 
-## Read the recorded effort
+## Self-audit before you hand it over
 
-Claude Code records `effort` and `perTurnEffort` on assistant rows in its session JSONL. Read those fields before writing the report signature. A non-null `perTurnEffort` overrides `effort` for that turn. This setting belongs to the harness; the model does not reliably know it from introspection.
+stamp the model signature after the content and optional flair are final, then run the checker:
+
+```bash
+python3 scripts/stamp-signature.py reports/your-report.html --model MODEL --effort EFFORT --session-tokens SESSION_TOKENS --context-tokens CONTEXT_TOKENS
+scripts/check-render.sh reports/your-report.html
+```
+
+use readable model names, with the creator first and its recorded `--effort`. repeat `--contributor MODEL ROLE EFFORT` for other models, using roles such as `audited`, `reviewed`, or `assisted`. keep one model per line. resolve effort using the lookup below before using `unknown`. do not infer effort from task difficulty. token use is a rough session total, including earlier work. context is the approximate context length when the report is finalized. use available session counters or an honest estimate. omit unavailable fields so the footer says unknown. do not invent model identities, allocate tokens to this report, or scan unrelated sessions. the helper abbreviates counts with k/m and puts a readable local date and time on a separate line below the usage. it updates one footer below the quote. generation timestamps belong here, not in introductory prose. when re-stamping a historical report, pass `--finalized-at` with its original timestamp and timezone so the footer keeps the real finalization time.
+
+### Read the recorded effort
+
+Claude Code records `effort` and `perTurnEffort` on assistant rows in its session JSONL. Read those fields before stamping a report. A non-null `perTurnEffort` overrides `effort` for that turn. This setting belongs to the harness; the model does not reliably know it from introspection.
 
 Use the exact session ID from the harness or the scratch manifest. Locate its file under `~/.claude/projects/<project>/<session-id>.jsonl`, then run:
 
@@ -135,21 +148,26 @@ Use the exact session ID from the harness or the scratch manifest. Locate its fi
 python3 scripts/read-session-effort.py /path/to/session.jsonl
 ```
 
-The reader prints model IDs and recorded effort levels only. For a historical report, pass `--before` with its original finalization timestamp and timezone. If levels changed, preserve that fact, for example `high / xhigh effort`. Read each contributor's own transcript separately; never give a contributor the creator's effort by assumption.
+The reader prints model IDs and recorded effort levels only. For a historical report, pass `--before` with its original finalization timestamp and timezone. If levels changed, preserve that fact, for example `--effort "high / xhigh"`. Read each contributor's own transcript separately; never give a contributor the creator's effort by assumption.
+
+Codex records each turn's model and reasoning effort in `turn_context` rows and token use in `token_usage_record` (or `token_count` event) rows of its rollout JSONL at `~/.codex/sessions/YYYY/MM/DD/rollout-<timestamp>-<session-id>.jsonl`. The `turn_context` effort is the effective per-turn setting, not a config default. Read them with:
+
+```bash
+python3 scripts/read-codex-session.py /path/to/rollout.jsonl
+python3 scripts/read-codex-session.py --find /path/to/project
+```
+
+The reader prints session metadata, model IDs with recorded effort levels, cumulative thread tokens, last-turn context size, and the model context window. `--find` locates the newest non-subagent rollout for a working directory. `--before` works as above. A long thread spans days and forks into per-resume rollout files linked by `parent_thread_id`; read the file that was live when the report finalized, and never read a guardian review thread for the main session's effort.
 
 For other harnesses, use their explicit session metadata. Current settings files and environment defaults are not proof of a past session's effective effort. Use `unknown` only when the exact transcript or its effort fields are unavailable, and record that reason in the scratch manifest. Do not substitute a nearby session, infer a level from token counts, or publish transcript contents.
 
-## Self-audit before you hand it over
+the checker measures both themes automatically and captures wide and narrow screenshots in dark mode by default. use `--theme light` to choose light mode. it includes full-page images, readable tiles, expanded details, and scroll-container views. text contrast and theme layout differences are checked in code. it prints an immutable JSON result path. exit 0 means the mechanical checks passed, 1 means a defect, and 2 means a failed check. warnings and unsupported cases still need judgment.
 
-Own the render loop rather than trusting the markup. Run:
+review wide and narrow screenshots in the selected theme once. do not repeat screenshot review for the other theme. use the automated contrast results to fix colors, including hard-coded overrides. use theme variables and solid backgrounds so checks can determine contrast; unsupported cases are not verified passes. use the tiles and scroll captures to inspect content that a scaled full-page image hides. inspect expanded sections and any named details groups the checker reports as unsupported. a clean wide view never excuses skipping narrow review. confirm that the first screen orients a stranger, the text is readable, and diagram claims agree with their sources.
 
-```bash
-scripts/check-render.sh reports/your-report.html
-```
+after a content, styling, or signature change, rerun the check and inspect the affected views. verify the final source hash matches the result. a missing measurement, stale screenshot, or successful shell exit without complete results is not approval to deliver.
 
-It checks the mechanical failures that actually ship (oversized file, external assets, unresolved build placeholders, em and en dashes including the HTML-entity forms `&ndash;` and `&mdash;` that hide in a time or number range, sideways page scroll, a hero diagram that shrinks instead of scrolling) and writes a wide and a narrow screenshot.
-
-Then read both screenshots, because the part that matters is not mechanical. Ask the question the reader will ask: **if I knew nothing about this, would the first screen tell me what it is and why I should care?** Every proper noun on that screen needs to already be defined. If you cannot answer yes, the report is not done, and the fix is more altitude rather than more detail.
+setup, output fields, geometry warnings, and troubleshooting: [references/render-checks.md](references/render-checks.md). geometry checks are experimental and opt-in until calibrated on representative reports.
 
 ## What to avoid
 
