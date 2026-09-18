@@ -136,7 +136,7 @@ python3 scripts/stamp-signature.py reports/your-report.html --model MODEL --effo
 scripts/check-render.sh reports/your-report.html
 ```
 
-use readable model names, with the creator first and its recorded `--effort`. repeat `--contributor MODEL ROLE EFFORT` for other models, using roles such as `audited`, `reviewed`, or `assisted`. keep one model per line. resolve effort using the lookup below before using `unknown`. do not infer effort from task difficulty. token use is a rough session total, including earlier work. context is the approximate context length when the report is finalized. use available session counters or an honest estimate. omit unavailable fields so the footer says unknown. do not invent model identities, allocate tokens to this report, or scan unrelated sessions. the helper abbreviates counts with k/m and puts a readable local date and time on a separate line below the usage. it updates one footer below the quote. generation timestamps belong here, not in introductory prose. when re-stamping a historical report, pass `--finalized-at` with its original timestamp and timezone so the footer keeps the real finalization time.
+use readable model names, with the creator first and its recorded `--effort`. repeat `--contributor MODEL ROLE EFFORT` for other models, using roles such as `audited`, `reviewed`, or `assisted`. keep one model per line. resolve effort using the lookup below before using `unknown`. do not infer effort from task difficulty. session tokens are fresh tokens: new input plus output over the whole session, cache reads excluded, so claude and codex numbers compare. the readers below print that as `session_tokens`, plus `processed_tokens` (the cache-inclusive total, which runs 20 to 50 times larger) for reference. context is the approximate context length when the report is finalized. use the readers when a transcript is available, else an honest estimate. omit unavailable fields so the footer says unknown. do not invent model identities, allocate tokens to this report, or scan unrelated sessions. the helper abbreviates counts with k/m and puts a readable local date and time on a separate line below the usage. it updates one footer below the quote. generation timestamps belong here, not in introductory prose. when re-stamping a historical report, pass `--finalized-at` with its original timestamp and timezone so the footer keeps the real finalization time.
 
 ### Read the recorded effort
 
@@ -148,7 +148,7 @@ Use the exact session ID from the harness or the scratch manifest. Locate its fi
 python3 scripts/read-session-effort.py /path/to/session.jsonl
 ```
 
-The reader prints model IDs and recorded effort levels only. For a historical report, pass `--before` with its original finalization timestamp and timezone. If levels changed, preserve that fact, for example `--effort "high / xhigh"`. Read each contributor's own transcript separately; never give a contributor the creator's effort by assumption.
+The reader prints model IDs, recorded effort levels, and token use. For a historical report, pass `--before` with its original finalization timestamp and timezone. If levels changed, preserve that fact, for example `--effort "high / xhigh"`. Read each contributor's own transcript separately; never give a contributor the creator's effort by assumption.
 
 Codex records each turn's model and reasoning effort in `turn_context` rows and token use in `token_usage_record` (or `token_count` event) rows of its rollout JSONL at `~/.codex/sessions/YYYY/MM/DD/rollout-<timestamp>-<session-id>.jsonl`. The `turn_context` effort is the effective per-turn setting, not a config default. Read them with:
 
@@ -157,7 +157,7 @@ python3 scripts/read-codex-session.py /path/to/rollout.jsonl
 python3 scripts/read-codex-session.py --find /path/to/project
 ```
 
-The reader prints session metadata, model IDs with recorded effort levels, cumulative thread tokens, last-turn context size, and the model context window. `--find` locates the newest non-subagent rollout for a working directory. `--before` works as above. A long thread spans days and forks into per-resume rollout files linked by `parent_thread_id`; read the file that was live when the report finalized, and never read a guardian review thread for the main session's effort.
+The reader prints session metadata, model IDs with recorded effort levels, token use, last-turn context size, and the model context window. `--find` locates the newest non-subagent rollout for a working directory. `--before` works as above. A long thread spans days and forks into per-resume rollout files linked by `parent_thread_id`; read the file that was live when the report finalized, and never read a guardian review thread for the main session's effort.
 
 For other harnesses, use their explicit session metadata. Current settings files and environment defaults are not proof of a past session's effective effort. Use `unknown` only when the exact transcript or its effort fields are unavailable, and record that reason in the scratch manifest. Do not substitute a nearby session, infer a level from token counts, or publish transcript contents.
 

@@ -21,6 +21,7 @@ def read_session(path, before=None):
     models = {}
     meta = {}
     session_tokens = None
+    processed_tokens = None
     context_tokens = None
     context_window = None
     with path.open(encoding="utf-8") as transcript:
@@ -56,14 +57,21 @@ def read_session(path, before=None):
             usage = None
             if kind == "token_usage_record":
                 thread = payload.get("thread_token_usage") or {}
-                session_tokens = thread.get("total_tokens", session_tokens)
+                processed_tokens = thread.get("total_tokens", processed_tokens)
                 usage = payload.get("usage")
             elif kind == "event_msg" and payload.get("type") == "token_count":
                 info = payload.get("info") or {}
-                total = info.get("total_token_usage") or {}
-                session_tokens = total.get("total_tokens", session_tokens)
+                thread = info.get("total_token_usage") or {}
+                processed_tokens = thread.get("total_tokens", processed_tokens)
                 usage = info.get("last_token_usage")
                 context_window = info.get("model_context_window", context_window)
+            else:
+                thread = None
+            if thread:
+                fresh = (thread.get("input_tokens", 0) - thread.get("cached_input_tokens", 0)
+                         - thread.get("cache_write_input_tokens", 0) + thread.get("output_tokens", 0))
+                if thread.get("total_tokens") is not None:
+                    session_tokens = fresh
             if usage and usage.get("total_tokens") is not None:
                 context_tokens = usage["total_tokens"]
     return {
@@ -72,6 +80,7 @@ def read_session(path, before=None):
         "cwd": meta.get("cwd"),
         "models": [{"model": model, "efforts": levels} for model, levels in models.items()],
         "session_tokens": session_tokens,
+        "processed_tokens": processed_tokens,
         "context_tokens": context_tokens,
         "model_context_window": context_window,
     }
