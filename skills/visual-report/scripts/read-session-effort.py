@@ -38,19 +38,22 @@ def read_effort(path, before=None):
 
 
 def read_usage(path, before=None):
-    fresh = processed = 0
-    seen = False
+    usage_by_message = {}
     for row in walk(path, before):
-        usage = (row.get("message") or {}).get("usage")
+        message = row.get("message") or {}
+        usage = message.get("usage")
         if not usage:
             continue
-        seen = True
+        # Streaming rows repeat one message's usage; its last usage row is authoritative.
+        usage_by_message[message.get("id") or object()] = usage
+    if not usage_by_message:
+        return {"session_tokens": None, "processed_tokens": None}
+    fresh = processed = 0
+    for usage in usage_by_message.values():
         fresh += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
         processed += (usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
                       + usage.get("cache_read_input_tokens", 0)
                       + usage.get("cache_creation_input_tokens", 0))
-    if not seen:
-        return {"session_tokens": None, "processed_tokens": None}
     return {"session_tokens": fresh, "processed_tokens": processed}
 
 

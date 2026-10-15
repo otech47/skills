@@ -1,0 +1,22 @@
+[package]
+name = "video-explainer"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+fframes = { git = "https://github.com/dmtrKovalenko/fframes", rev = "44f5431ce63080135dc2e422b2c71e5bbfdecd91", features = ["compile-time-svgtree", "cli", "h264", "libav-agree-gpl"] }
+fframes_skia_renderer = { git = "https://github.com/dmtrKovalenko/fframes", rev = "44f5431ce63080135dc2e422b2c71e5bbfdecd91", features = ["metal", "cli"] }
+fframes_native_player = { git = "https://github.com/dmtrKovalenko/fframes", rev = "44f5431ce63080135dc2e422b2c71e5bbfdecd91", default-features = false, features = ["metal", "audio"] }
+
+[lib]
+name = "video_explainer"
+path = "src/lib.rs"
+doctest = false
+
+[[bin]]
+name = "video-explainer"
+path = "src/main.rs"
+
+[workspace]
+

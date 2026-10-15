@@ -55,6 +55,55 @@ class SessionEffortTest(unittest.TestCase):
         before = datetime(2026, 9, 15, 12, tzinfo=timezone.utc)
         self.assertEqual(self.read([self.row("high"), self.row("max", timestamp="2026-09-16T10:00:00Z")], before)[0]["efforts"], ["high"])
 
+    def usage_row(self, message_id=None, output_tokens=1, timestamp="2026-09-15T10:00:00Z"):
+        message = {"model": "claude-opus-5", "usage": {
+            "input_tokens": 10, "output_tokens": output_tokens,
+            "cache_read_input_tokens": 100, "cache_creation_input_tokens": 20,
+        }}
+        if message_id is not None:
+            message["id"] = message_id
+        return {"type": "assistant", "timestamp": timestamp, "message": message}
+
+    def read_usage(self, rows, before=None):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "session.jsonl"
+            path.write_text("\n".join(json.dumps(row) for row in rows))
+            return effort.read_usage(path, before)
+
+    def test_usage_keeps_last_snapshot_per_message_id(self):
+        rows = [self.usage_row("a"), self.usage_row("b", 3), self.usage_row("a", 5)]
+        self.assertEqual(self.read_usage(rows), {"session_tokens": 28, "processed_tokens": 268})
+
+    def test_identical_usage_snapshots_count_once(self):
+        row = self.usage_row("a", 5)
+        self.assertEqual(self.read_usage([row, row]), {"session_tokens": 15, "processed_tokens": 135})
+
+    def test_legacy_usage_without_message_ids_remains_independent(self):
+        rows = [self.usage_row(), self.usage_row(), self.usage_row("a"), self.usage_row("a", 5)]
+        self.assertEqual(self.read_usage(rows), {"session_tokens": 37, "processed_tokens": 397})
+
+    def test_empty_and_null_message_ids_remain_independent(self):
+        null_id = self.usage_row()
+        null_id["message"]["id"] = None
+        self.assertEqual(self.read_usage([null_id, null_id, self.usage_row("")]),
+                         {"session_tokens": 33, "processed_tokens": 393})
+
+    def test_usage_cutoff_selects_last_snapshot_before_finalization(self):
+        before = datetime(2026, 9, 15, 12, tzinfo=timezone.utc)
+        rows = [self.usage_row("a"),
+                self.usage_row("a", 3, "2026-09-15T11:00:00Z"),
+                self.usage_row("a", 100, "2026-09-15T13:00:00Z")]
+        self.assertEqual(self.read_usage(rows, before), {"session_tokens": 13, "processed_tokens": 133})
+
+    def test_missing_usage_does_not_erase_the_last_snapshot(self):
+        row = self.usage_row("a")
+        del row["message"]["usage"]
+        self.assertEqual(self.read_usage([self.usage_row("a", 5), row]),
+                         {"session_tokens": 15, "processed_tokens": 135})
+
+    def test_missing_usage_stays_unknown(self):
+        self.assertEqual(self.read_usage([self.row()]), {"session_tokens": None, "processed_tokens": None})
+
 
 if __name__ == "__main__":
     unittest.main()

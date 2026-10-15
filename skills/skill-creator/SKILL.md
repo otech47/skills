@@ -83,6 +83,14 @@ skill-name/
     └── assets/     - Files used in output (templates, icons, fonts)
 ```
 
+#### Validate for the intended host
+
+Choose the target before removing frontmatter fields. `scripts/quick_validate.py <skill-directory>` defaults to the six portable fields. For local Claude Code skills, add `--target claude-code` to accept its documented extensions. Packaging keeps portable validation. Both profiles still require `name` and `description` for shared skill discovery; this is a basic metadata check, not a full host schema validator.
+
+Claude Code defaults `user-invocable` to `true`; omit it or preserve an existing `true` when users need `/skill-name`. Setting it to `false` hides the command. `disable-model-invocation` controls automatic use separately. Codex supports explicit invocation through `$` or `/skills` without `user-invocable`; `agents/openai.yaml` controls implicit invocation through `policy.allow_implicit_invocation`.
+
+Check the [Agent Skills specification](https://agentskills.io/specification), [Claude Code frontmatter reference](https://code.claude.com/docs/en/skills#frontmatter-reference), and [Codex skill documentation](https://developers.openai.com/codex/skills) before changing the allowlists. Verify discovery in the intended host; a portable-validator rejection alone does not prove a host extension is invalid.
+
 #### Progressive Disclosure
 
 Skills use a three-level loading system:

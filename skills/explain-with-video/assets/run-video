@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "$#" -lt 2 ]; then
+    printf '%s\n' 'usage: run-video /absolute/project/path <fframes command> [arguments]' >&2
+    exit 2
+fi
+runtime_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+project_dir="$1"
+shift
+if [[ "$project_dir" != /* ]] || [ ! -f "$project_dir/Cargo.toml" ]; then
+    printf '%s\n' 'project must be an absolute path containing Cargo.toml' >&2
+    exit 2
+fi
+export CARGO_HOME="$runtime_dir/.cargo-home"
+export CARGO_TARGET_DIR="$runtime_dir/target"
+export FFMPEG_BINARIES_CACHE="$runtime_dir/.ffmpeg-cache"
+exec cargo run --release --locked --manifest-path "$project_dir/Cargo.toml" -- "$@"

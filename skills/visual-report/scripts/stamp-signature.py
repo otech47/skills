@@ -56,9 +56,10 @@ def stamp(source, model=None, also_models=(), session_tokens=None, context_token
     seen = set()
     lines = []
     for name, role, level in models:
-        if name in seen:
+        # one model can hold two roles, such as created and later revised
+        if (name, role) in seen or (role == "assisted" and any(name == n for n, _ in seen)):
             continue
-        seen.add(name)
+        seen.add((name, role))
         effort_label = f"{level} effort" if level else "effort unknown"
         lines.append(f"<div>{escape(role)} by <strong>{escape(name)}</strong> &middot; {escape(effort_label)}</div>")
     date = finalized_at or datetime.now().astimezone()

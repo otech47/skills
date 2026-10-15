@@ -1,0 +1,23 @@
+{
+  "skill_name": "explain-with-video",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Make a visual report explaining when a background job retries and when it stops. Keep the implementation detail optional.",
+      "expected_output": "An HTML visual report; no video, narration, or FFrames work.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Make a narrated video explainer about when a background job retries and when it stops. Show the decision clearly and give me the MP4.",
+      "expected_output": "A source-backed scene plan, measured narration, rendered MP4, captions, descriptive transcript, and editable project.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Explain retry limits in both an HTML visual report and a short narrated video. Use the same facts for both.",
+      "expected_output": "Both formats, with a shared factual brief and separate HTML and video validation.",
+      "files": []
+    }
+  ]
+}

@@ -20,7 +20,7 @@ OUT="${2:-${SRC%.src.html}.html}"
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 [ -x "$CHROME" ] || CHROME="$(command -v chromium || command -v google-chrome || true)"
 if [ -z "${CHROME:-}" ] || [ ! -x "$CHROME" ]; then
-  echo "no chrome/chromium found; hand-author the SVG instead (see references/information-hierarchy.md)" >&2
+  echo "no chrome/chromium found; hand-author inline SVG with readable labels instead" >&2
   exit 1
 fi
 

@@ -6,7 +6,7 @@ const { createHash } = require('node:crypto');
 const inspectPage = require('./render-page.cjs');
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const options = { timeout: 60000, geometry: false, widths: [], theme: 'dark' };
+const options = { timeout: 60000, geometry: false, widths: [], theme: 'dark', cache: true };
 let source, output, basename, browser, run, axeSource;
 const result = { source: {}, checks: [], views: [], errors: [], status: 'error', exitCode: 2, reviewRequired: true };
 const started = Date.now();
@@ -17,6 +17,7 @@ function argumentsFor(args) {
     const arg = args[i];
     if (arg === '--help' || arg === '-h') return false;
     if (arg === '--geometry') { options.geometry = true; continue; }
+    if (arg === '--no-cache') { options.cache = false; continue; }
     if (['--output-dir', '--timeout', '--browser', '--widths', '--theme'].includes(arg)) {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new Error(`missing value for ${arg}`);
@@ -35,7 +36,7 @@ function argumentsFor(args) {
 }
 
 async function atomicLink(target, destination) {
-  const temporary = `${destination}.${path.basename(run)}.link`;
+  const temporary = `${destination}.${process.pid}.${Date.now()}.link`;
   await fs.symlink(target, temporary);
   await fs.rename(temporary, destination);
 }
@@ -49,27 +50,62 @@ async function finish() {
     result.outputDirectory = run;
     const json = path.join(run, 'result.json');
     await fs.writeFile(json, JSON.stringify(result, null, 2) + '\n');
-    const latest = path.join(output, `${basename}.render-latest`);
-    // one shared pointer keeps concurrent screenshot and JSON aliases coherent.
-    await atomicLink(path.basename(run), latest);
-    await atomicLink(`${basename}.render-latest/result.json`, path.join(output, `${basename}.render.json`));
-    for (const view of result.views.filter(v => v.state === 'default')) {
-      const full = view.images.find(i => i.kind === 'full');
-      if (!full) continue;
-      await atomicLink(`${basename}.render-latest/${path.basename(full.path)}`, path.join(output, `${basename}.${view.name}.png`));
-      if (view.theme === (options.theme === 'dark' ? 'dark' : 'light') && ['wide', 'narrow'].includes(view.name.split('-')[0])) await atomicLink(`${basename}.render-latest/${path.basename(full.path)}`, path.join(output, `${basename}.${view.name.split('-')[0]}.png`));
-    }
-    const unique = new Map(result.checks.filter(c => ['fail', 'warn'].includes(c.status)).map(c => [`${c.name}:${c.detail}`, c]));
-    for (const c of unique.values()) console.log(`${c.status.toUpperCase()}: ${c.name}: ${c.detail}`);
-    for (const error of result.errors) console.error(`ERROR: ${error}`);
-    console.log(`${result.status}: ${result.views.length} measured views; ${result.views.filter(v => v.images.length).length} captured views; visual review required in ${result.captureThemes.join(" and ")}`);
-    for (const view of result.views) {
-      const image = view.images.find(i => i.kind === 'full');
-      if (image) console.log(`${view.name} ${view.state}: ${image.path}`);
-    }
-    console.log(`json: ${json}`);
+    await publish(run, result);
+    print(result, json);
   } else console.error(`ERROR: ${result.errors.join('; ')}`);
   process.exitCode = result.exitCode;
+}
+
+function print(r, json) {
+  const unique = new Map(r.checks.filter(c => ['fail', 'warn'].includes(c.status)).map(c => [`${c.name}:${c.detail}`, c]));
+  for (const c of unique.values()) console.log(`${c.status.toUpperCase()}: ${c.name}: ${c.detail}`);
+  for (const error of r.errors) console.error(`ERROR: ${error}`);
+  console.log(`${r.status}: ${r.views.length} measured views; ${r.views.filter(v => v.images.length).length} captured views; visual review required in ${r.captureThemes.join(" and ")}`);
+  for (const view of r.views) {
+    const image = view.images.find(i => i.kind === 'full');
+    if (image) console.log(`${view.name} ${view.state}: ${image.path}`);
+  }
+  console.log(`json: ${json}`);
+}
+
+// the render-latest pointer and the per-view aliases, shared by fresh runs and cache hits.
+async function publish(dir, r) {
+  const latest = path.join(output, `${basename}.render-latest`);
+  await atomicLink(path.basename(dir), latest);
+  await atomicLink(`${basename}.render-latest/result.json`, path.join(output, `${basename}.render.json`));
+  for (const view of r.views.filter(v => v.state === 'default')) {
+    const full = view.images.find(i => i.kind === 'full');
+    if (!full) continue;
+    await atomicLink(`${basename}.render-latest/${path.basename(full.path)}`, path.join(output, `${basename}.${view.name}.png`));
+    if (view.theme === (options.theme === 'dark' ? 'dark' : 'light') && ['wide', 'narrow'].includes(view.name.split('-')[0])) await atomicLink(`${basename}.render-latest/${path.basename(full.path)}`, path.join(output, `${basename}.${view.name.split('-')[0]}.png`));
+  }
+}
+
+// a previous complete run of the same bytes with the same options and the same checker is the verdict.
+// nothing in the page can differ, so re-rendering only spends time and invites a second read of identical screenshots.
+async function cached(sha256) {
+  if (!options.cache) return null;
+  let names;
+  try { names = await fs.readdir(output); } catch { return null; }
+  let best = null;
+  for (const name of names) {
+    if (!name.startsWith(`${basename}.render-`) || name.endsWith('-latest')) continue;
+    const dir = path.join(output, name);
+    let previous;
+    try {
+      if ((await fs.lstat(dir)).isSymbolicLink()) continue;
+      previous = JSON.parse(await fs.readFile(path.join(dir, 'result.json'), 'utf8'));
+    } catch { continue; }
+    if (previous.source?.sha256 !== sha256 || previous.status === 'error' || previous.cacheKey !== result.cacheKey || !previous.finishedAt) continue;
+    if (!best || previous.finishedAt > best.previous.finishedAt) best = { dir, previous };
+  }
+  if (!best) return null;
+  // every screenshot must still exist, and its mtime must move past the html so the render gate sees a fresh check.
+  const now = new Date();
+  for (const view of best.previous.views) for (const image of view.images) {
+    try { await fs.utimes(image.path, now, now); } catch { return null; }
+  }
+  return best;
 }
 
 async function findBrowser() {
@@ -221,16 +257,34 @@ async function inspectViews() {
 (async () => {
   try {
     if (!argumentsFor(process.argv.slice(2))) {
-      console.log('usage: check-render.sh REPORT [--output-dir DIR] [--timeout MS] [--browser PATH] [--widths 375,1280] [--theme dark|light|both] [--geometry]');
+      console.log('usage: check-render.sh REPORT [--output-dir DIR] [--timeout MS] [--browser PATH] [--widths 375,1280] [--theme dark|light|both] [--geometry] [--no-cache]');
       return;
     }
     output = path.resolve(options['output-dir'] || path.dirname(source));
     basename = path.basename(source, path.extname(source));
     await fs.mkdir(output, { recursive: true });
-    run = await fs.mkdtemp(path.join(output, `${basename}.render-`));
     const bytes = await fs.readFile(source);
     result.source = { path: source, sha256: hash(bytes), bytes: bytes.length };
     result.startedAt = new Date(started).toISOString();
+    const tool = hash(Buffer.concat(await Promise.all([__filename, path.join(__dirname, 'render-page.cjs'), path.join(__dirname, 'package.json')].map(f => fs.readFile(f))))).slice(0, 12);
+    result.cacheKey = `${tool}:${options.theme}:${[...options.widths].sort((a, b) => a - b).join(',')}:${options.geometry ? 'geometry' : ''}`;
+    const hit = await cached(result.source.sha256);
+    if (hit) {
+      hit.previous.cacheHits = (hit.previous.cacheHits || 0) + 1;
+      hit.previous.lastVerifiedAt = new Date().toISOString();
+      await fs.writeFile(path.join(hit.dir, 'result.json'), JSON.stringify(hit.previous, null, 2) + '\n');
+      await publish(hit.dir, hit.previous);
+      console.log(`cached: source unchanged since ${hit.previous.finishedAt}; verdict and screenshots from ${hit.dir} (pass --no-cache to re-render)`);
+      print(hit.previous, path.join(hit.dir, 'result.json'));
+      process.exitCode = hit.previous.exitCode;
+      return;
+    }
+    // the run directory carries the first 8 hex digits of the source hash, so two screenshots with the same directory name show the same bytes.
+    const stem = path.join(output, `${basename}.render-${result.source.sha256.slice(0, 8)}`);
+    for (let n = 0; ; n++) {
+      const candidate = n ? `${stem}-${n}` : stem;
+      try { await fs.mkdir(candidate); run = candidate; break; } catch (error) { if (error.code !== 'EEXIST') throw error; }
+    }
     const text = bytes.toString('utf8');
     add('file-size', bytes.length > 150 * 1024 ? 'fail' : 'pass', `${bytes.length} bytes; limit 153600`);
     add('build-placeholders', /MERMAID-LIB-HERE|MERMAID_PLACEHOLDER/.test(text) ? 'fail' : 'pass', 'unresolved diagram placeholders');

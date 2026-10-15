@@ -3,14 +3,26 @@
 Quick validation script for skills - minimal version
 """
 
+import argparse
 import sys
-import os
 import re
 import yaml
 from pathlib import Path
 
-def validate_skill(skill_path):
+PORTABLE_PROPERTIES = {'name', 'description', 'license', 'allowed-tools', 'metadata', 'compatibility'}
+CLAUDE_CODE_PROPERTIES = PORTABLE_PROPERTIES | {
+    'when_to_use', 'argument-hint', 'arguments', 'disable-model-invocation',
+    'user-invocable', 'disallowed-tools', 'model', 'effort', 'context', 'agent',
+    'background', 'hooks', 'paths', 'shell',
+}
+VALIDATION_TARGETS = {'portable': PORTABLE_PROPERTIES, 'claude-code': CLAUDE_CODE_PROPERTIES}
+
+
+def validate_skill(skill_path, target='portable'):
     """Basic validation of a skill"""
+    if target not in VALIDATION_TARGETS:
+        return False, f"Unknown validation target: {target}"
+    allowed_properties = VALIDATION_TARGETS[target]
     skill_path = Path(skill_path)
 
     # Check SKILL.md exists
@@ -38,15 +50,15 @@ def validate_skill(skill_path):
     except yaml.YAMLError as e:
         return False, f"Invalid YAML in frontmatter: {e}"
 
-    # Define allowed properties
-    ALLOWED_PROPERTIES = {'name', 'description', 'license', 'allowed-tools', 'metadata', 'compatibility'}
-
     # Check for unexpected properties (excluding nested keys under metadata)
-    unexpected_keys = set(frontmatter.keys()) - ALLOWED_PROPERTIES
+    unexpected_keys = set(frontmatter.keys()) - allowed_properties
     if unexpected_keys:
+        hint = ''
+        if target == 'portable' and unexpected_keys <= CLAUDE_CODE_PROPERTIES:
+            hint = ' For local Claude Code skills, use --target claude-code; uploads still require portable metadata.'
         return False, (
             f"Unexpected key(s) in SKILL.md frontmatter: {', '.join(sorted(unexpected_keys))}. "
-            f"Allowed properties are: {', '.join(sorted(ALLOWED_PROPERTIES))}"
+            f"Allowed properties for {target} are: {', '.join(sorted(allowed_properties))}.{hint}"
         )
 
     # Check required fields
@@ -94,10 +106,10 @@ def validate_skill(skill_path):
     return True, "Skill is valid!"
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python quick_validate.py <skill_directory>")
-        sys.exit(1)
-    
-    valid, message = validate_skill(sys.argv[1])
+    parser = argparse.ArgumentParser(description="Validate skill frontmatter for its intended host.")
+    parser.add_argument("skill_directory")
+    parser.add_argument("--target", choices=VALIDATION_TARGETS, default="portable")
+    args = parser.parse_args()
+    valid, message = validate_skill(args.skill_directory, target=args.target)
     print(message)
     sys.exit(0 if valid else 1)
