@@ -6,11 +6,22 @@ const { createHash } = require('node:crypto');
 const inspectPage = require('./render-page.cjs');
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const options = { timeout: 60000, geometry: false, widths: [], theme: 'dark', cache: true };
+const options = { timeout: 60000, geometry: false, widths: [], theme: 'dark', cache: true, 'max-size': 150 };
 let source, output, basename, browser, run, axeSource;
 const result = { source: {}, checks: [], views: [], errors: [], status: 'error', exitCode: 2, reviewRequired: true };
 const started = Date.now();
 const add = (name, status, detail, extra = {}) => result.checks.push({ name, status, detail, ...extra });
+
+
+function measureReportSize(text) {
+  const totalBytes = Buffer.byteLength(text);
+  const markup = text.replace(/<!--[\s\S]*?-->|<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+  const players = markup.match(/<video\b[^>]*>[\s\S]*?<\/video\s*>/gi) || [];
+  const sources = new Set(players.flatMap(player => [...player.matchAll(/\bsrc\s*=\s*(["'])(data:video\/(?:mp4|webm|ogg);base64,[A-Za-z0-9+/]+={0,2})\1/gi)].map(match => match[2])));
+  let embeddedVideoBytes = 0;
+  for (const source of sources) embeddedVideoBytes += (text.split(source).length - 1) * source.length;
+  return { totalBytes, embeddedVideoBytes, documentBytes: totalBytes - embeddedVideoBytes };
+}
 
 function argumentsFor(args) {
   for (let i = 0; i < args.length; i++) {
@@ -18,7 +29,7 @@ function argumentsFor(args) {
     if (arg === '--help' || arg === '-h') return false;
     if (arg === '--geometry') { options.geometry = true; continue; }
     if (arg === '--no-cache') { options.cache = false; continue; }
-    if (['--output-dir', '--timeout', '--browser', '--widths', '--theme'].includes(arg)) {
+    if (['--output-dir', '--timeout', '--browser', '--widths', '--theme', '--max-size'].includes(arg)) {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new Error(`missing value for ${arg}`);
       options[arg.slice(2)] = value;
@@ -30,6 +41,8 @@ function argumentsFor(args) {
   result.captureThemes = options.theme === 'both' ? ['light', 'dark'] : [options.theme];
   options.timeout = Number(options.timeout);
   if (!Number.isInteger(options.timeout) || options.timeout < 100 || options.timeout > 600000) throw new Error('--timeout must be 100 to 600000 milliseconds');
+  options['max-size'] = Number(options['max-size']);
+  if (!Number.isInteger(options['max-size']) || options['max-size'] < 1 || options['max-size'] > 10240) throw new Error('--max-size must be 1 to 10240 kilobytes');
   options.widths = typeof options.widths === 'string' ? options.widths.split(',').map(Number) : [];
   if (options.widths.some(w => !Number.isInteger(w) || w < 240 || w > 3840)) throw new Error('--widths must contain comma-separated widths from 240 to 3840');
   return true;
@@ -254,10 +267,12 @@ async function inspectViews() {
   }
 }
 
-(async () => {
+module.exports = { measureReportSize };
+
+if (require.main === module) (async () => {
   try {
     if (!argumentsFor(process.argv.slice(2))) {
-      console.log('usage: check-render.sh REPORT [--output-dir DIR] [--timeout MS] [--browser PATH] [--widths 375,1280] [--theme dark|light|both] [--geometry] [--no-cache]');
+      console.log('usage: check-render.sh REPORT [--output-dir DIR] [--timeout MS] [--browser PATH] [--widths 375,1280] [--theme dark|light|both] [--max-size KB] [--geometry] [--no-cache]');
       return;
     }
     output = path.resolve(options['output-dir'] || path.dirname(source));
@@ -267,7 +282,7 @@ async function inspectViews() {
     result.source = { path: source, sha256: hash(bytes), bytes: bytes.length };
     result.startedAt = new Date(started).toISOString();
     const tool = hash(Buffer.concat(await Promise.all([__filename, path.join(__dirname, 'render-page.cjs'), path.join(__dirname, 'package.json')].map(f => fs.readFile(f))))).slice(0, 12);
-    result.cacheKey = `${tool}:${options.theme}:${[...options.widths].sort((a, b) => a - b).join(',')}:${options.geometry ? 'geometry' : ''}`;
+    result.cacheKey = `${tool}:${options.theme}:${[...options.widths].sort((a, b) => a - b).join(',')}:${options.geometry ? 'geometry' : ''}:${options['max-size']}`;
     const hit = await cached(result.source.sha256);
     if (hit) {
       hit.previous.cacheHits = (hit.previous.cacheHits || 0) + 1;
@@ -286,7 +301,10 @@ async function inspectViews() {
       try { await fs.mkdir(candidate); run = candidate; break; } catch (error) { if (error.code !== 'EEXIST') throw error; }
     }
     const text = bytes.toString('utf8');
-    add('file-size', bytes.length > 150 * 1024 ? 'fail' : 'pass', `${bytes.length} bytes; limit 153600`);
+    const size = measureReportSize(text);
+    result.source.embeddedVideoBytes = size.embeddedVideoBytes;
+    result.source.documentBytes = size.documentBytes;
+    add('file-size', size.documentBytes > options['max-size'] * 1024 ? 'fail' : 'pass', `${size.totalBytes} total bytes; ${size.embeddedVideoBytes} inline video bytes; ${size.documentBytes} document bytes; limit ${options['max-size'] * 1024}`);
     add('build-placeholders', /MERMAID-LIB-HERE|MERMAID_PLACEHOLDER/.test(text) ? 'fail' : 'pass', 'unresolved diagram placeholders');
     add('source-dashes', /[\u2013\u2014]|&(?:m|n)dash;|&#0*(?:8211|8212);|&#x0*(?:2013|2014);/i.test(text) ? 'fail' : 'pass', 'source bytes and encoded dash entities');
     let chromium;

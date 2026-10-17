@@ -10,13 +10,19 @@
     {
       "id": 2,
       "prompt": "Make a narrated video explainer about when a background job retries and when it stops. Show the decision clearly and give me the MP4.",
-      "expected_output": "A source-backed scene plan, measured narration, rendered MP4, captions, descriptive transcript, and editable project.",
+      "expected_output": "A compact HTML page with an embedded playable video and captions, linked first, plus the MP4 download, source-backed scene plan, measured narration, descriptive transcript, and editable project.",
       "files": []
     },
     {
       "id": 3,
       "prompt": "Explain retry limits in both an HTML visual report and a short narrated video. Use the same facts for both.",
-      "expected_output": "Both formats, with a shared factual brief and separate HTML and video validation.",
+      "expected_output": "An HTML visual report containing the video in a native player, with a shared factual brief, caption access, a supplementary MP4 download, and separate report, media, and embedded-playback checks.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Add this finished MP4 and its captions to my existing visual report. Keep the report's explanation and layout.",
+      "expected_output": "The report contains a playable embedded video and captions. The HTML is the primary handoff. The existing media is reused without narration or rendering work.",
       "files": []
     }
   ]

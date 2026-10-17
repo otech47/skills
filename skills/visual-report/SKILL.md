@@ -11,7 +11,7 @@ Build a visual explanation for an identified reader. Keep the report local unles
 
 ## choose the output
 
-For an explicit video explainer, narrated walkthrough, or request to turn a report into a video, read `../explain-with-video/SKILL.md` and follow its video output contract. For video only, stop the HTML route here. If both formats are requested, share the factual brief and follow each format's delivery checks. Ordinary visual-report requests and requests to explain something visually retain HTML output.
+For an explicit video explainer, narrated walkthrough, or request to turn a report into a video, read `../explain-with-video/SKILL.md`. Video-only requests use its compact HTML player page. When a report includes video, embed a playable `<video>` directly in that report and follow both formats' checks. Share the factual brief and link the HTML first. An MP4 link or a link to a separate player does not satisfy embedding in a report. Ordinary visual-report requests and requests to explain something visually retain HTML output without video production.
 
 ## choose one mode before drafting
 

@@ -4,9 +4,13 @@
 
 Use `scratch new <slug> "<task>"`. Put the HTML in `reports/`, planning records and structured appendices in `files/`, and screenshots in `screenshots/` or the renderer's documented output directory. Complete the manifest with artifacts, checks, and outcome. If scratch is unavailable, use `~/.agent-scratch/<slug>-report.html` and report the fallback.
 
-Keep one self-contained HTML file with inline CSS and static visuals. Aim for tens of KB, normally under 150 KB. Large embedded runtimes are defects. Meaningful external source links are allowed; rendering must not depend on network assets.
+Keep one self-contained HTML file with inline CSS and visuals. Aim for tens of KB, normally under 150 KB before video payloads. Requested video can exceed this size target. Large embedded runtimes are defects. Meaningful external source links are allowed; rendering must not depend on network assets.
 
 Publication requires authorization for this artifact in the current request. Opening, showing, or finishing means the local file. Do not infer permission from an earlier report's deployment.
+
+## requested video
+
+When video is requested, read `../../explain-with-video/references/browser-delivery.md`. Embed the finished video directly in the report with native playback controls. Include the video bytes and available captions in the HTML so the page remains portable. An MP4 download or a link to another player is supplementary. Verify play, pause, seeking, and captions inside the final page before handing off its HTML link. Ordinary reports do not require video production.
 
 ## prose and claims
 

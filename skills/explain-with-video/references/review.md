@@ -25,6 +25,6 @@ WebVTT captions must match the final narration. Verify key terminology and numbe
 
 ## handoff
 
-Provide the finished MP4 first, followed by captions, transcript, source notes, and an editable project without build caches. A local player is optional when it improves caption access. Do not generate a full HTML report unless requested. Keep publication, uploads, and external messages within the user's authorization.
+Follow `browser-delivery.md` to embed the video in the requested report or a compact HTML player page. Verify playback in the delivered HTML. Link that page first, with the MP4 download, captions, transcript, source notes, and editable project as supporting files. A full written report is needed only when requested. Keep publication, uploads, and external messages within the user's authorization.
 
 Record the actual runtime revision, voice settings, render timings, corrections, and available agent usage counters in the scratch manifest. Do not infer total production cost from rendering speed. Stop task-owned render commands and services that are no longer needed, using exact identities. Keep resources required by other work and record ownership.

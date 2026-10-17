@@ -19,6 +19,8 @@ scripts/check-render.sh reports/report.html --geometry --widths 375,1280
 
 the default widths are 820 and 500 pixels, each with a fixed 900px viewport height. `--widths` adds responsive cases. every width is measured in light and dark with reduced motion. screenshots use dark mode by default; `--theme light` selects light mode. `--theme both` is available for explicit diagnostics, not routine model review. the source loads at its original file URL. relative assets retain their meaning but fail the self-containment check. network requests are blocked and reported. ordinary source links remain valid.
 
+The size check limits document bytes to 150 KB by default. Inline base64 MP4, WebM, and Ogg sources inside native video players are counted separately. Repeated download copies of those sources share the exemption. Posters, captions, markup, and scripts remain within the document budget. `--max-size KB` sets that budget explicitly. Embedded playback needs its own browser check.
+
 ## outputs and exit status
 
 each invocation creates a separate `<name>.render-*` directory. the `json:` output names that run's immutable `result.json`. use this path for review and automation. `<name>.render.json` and `<name>.render-latest` point to the latest published result.
