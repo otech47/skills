@@ -24,6 +24,14 @@
       "prompt": "Add this finished MP4 and its captions to my existing visual report. Keep the report's explanation and layout.",
       "expected_output": "The report contains a playable embedded video and captions. The HTML is the primary handoff. The existing media is reused without narration or rendering work.",
       "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Make a narrated video explainer of how a payment moves from the sender's wallet through the federation to the receiver, and what happens when one guardian is offline. Use the attached app screenshots.",
+      "expected_output": "An HTML page with an embedded narrated video in which the payment is a token that travels through the stages as the voice names them, the offline guardian changes state in place, taps and screen pushes happen on the real screenshots, no scene is a static layout with cards fading in, scripts/check-motion.py passes on the encoded file, and the manifest records the stills test per scene.",
+      "files": [
+        "app screenshots"
+      ]
     }
   ]
 }

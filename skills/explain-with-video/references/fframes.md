@@ -6,7 +6,7 @@ The pinned backend revision is `44f5431ce63080135dc2e422b2c71e5bbfdecd91`. Read 
 
 ## load only the relevant guidance
 
-- Before designing, read the pinned `skills/fframes-video/references/design.md`.
+- Before designing, read this skill's `motion.md`, then the pinned `skills/fframes-video/references/design.md` for pacing, layout, typography, easing presets, and recipes.
 - When writing scenes, read `skills/fframes-video/references/api.md` and apply the local `write-rust` skill.
 - When placing or mixing audio, read `skills/fframes-video/references/audio.md`.
 - Use the upstream `skills/fframes-video/SKILL.md` for CLI commands and troubleshooting.
@@ -15,7 +15,9 @@ An existing checkout under `$HOME/tools/video-explainers/vendor/fframes` makes t
 
 ## project and build
 
-Copy `assets/starter` from this skill into the run's `files/video/` directory. Replace its example scene with the planned explanation. Keep the project source, fonts and licenses, input media, scene plan, and audio timing together. Keep the Cargo target cache outside the deliverable. Use the tested environment and commands in `runtime.md`.
+Copy `assets/starter` from this skill into the run's `files/video/` directory. Its `src/lib.rs` is already shaped as one stage: persistent actors drawn by the video with global timelines, chapters as scenes layered on top, a pointer that taps, a screen that pushes, a detail that lifts out, and a quantity that crosses a threshold. Replace its actors and chapters with the planned explanation; keep the structure. Keep the project source, fonts and licenses, input media, scene plan, and audio timing together. Keep the Cargo target cache outside the deliverable. Use the tested environment and commands in `runtime.md`.
+
+Give actors global timelines in `Video::render_frame`, where `frame.seconds()` is video time. Scene code receives scene-relative time; use it for text entrances and the beats inside the chapter. Scene audio placed at the scene's start stays aligned with captions as long as scenes keep their measured durations and no `Overlap`; if you use `Overlap` for cross-fades, move the narration to the video's `audio()` at zero so it does not shift.
 
 Prefer the Metal backend on supported macOS hardware. If GPU rendering is unavailable, validate a frame with the CLI's `skia-cpu` alternative and record the backend actually used. FFrames needs Rust and native media dependencies. Diagnose the actual missing prerequisite before adding packages or changing a global toolchain.
 

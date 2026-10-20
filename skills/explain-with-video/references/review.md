@@ -8,8 +8,18 @@ Review the actual encoded file that will be delivered. Record its hash, duration
 - The viewer can follow the decision or mechanism. Essential conditions remain visible where they apply.
 - Source facts, narration, UI labels, and diagrams agree. Prototype or illustrative behavior is identified where necessary.
 - Important text and callouts are readable at the intended player size. Color has another cue such as a label, shape, or position.
-- Motion reveals a useful change and has a clear focal point. Text remains visible long enough to read after movement settles.
+- Every fact in the narration has a motion that teaches it, timed to its words, with one focal movement at a time. Text remains visible long enough to read after movement settles.
 - Scene boundaries, the opening, the ending, and dense details are inspected in rendered frames. Contact sheets cover the sequence; close samples cover fast transitions.
+
+## motion
+
+```bash
+python3 "$HOME/.agents/skills/explain-with-video/scripts/check-motion.py"   "$RUN/files/video.mp4" --output "$RUN/files/motion-check.json"
+```
+
+The script decodes the file at a low rate and measures how much of it is visibly changing. It fails on low coverage, on any still window longer than two seconds, and on any hard cut. Read its dead windows against the timeline and fix the scenes behind them. A pass is the floor, not the review: ambient drift can raise coverage without teaching anything, and a thin pointer on a static screen can register as still.
+
+Then run the stills test from `motion.md` on the encoded file: one frame per second, and for each scene name what the stills do not carry. A scene whose stills carry everything is a slide and goes back to the plan. Record the per-scene answers in the manifest. The upstream review checklist in the design guide covers polish and comes after this.
 
 ## sound, captions, and playback
 
