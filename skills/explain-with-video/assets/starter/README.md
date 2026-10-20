@@ -4,7 +4,7 @@ For an agent authoring a local explainer, this project provides a ten-second sta
 
 `src/lib.rs` is shaped the way `references/motion.md` asks: the video draws persistent actors with global time, and the scenes are chapters that only add their heading. The starter's actors are a vector screen that pushes to a second screen after a tap, a pointer that travels and presses, a row that lifts out of the screen as the same drawing and returns, a bar that grows against a fixed line while its number counts, and a station path whose token advances as the viewer acts. Replace the actors and chapters with the planned explanation and keep the structure: one `fn actor(t)` per actor, keyed to video seconds, and one entrance and exit per chapter heading.
 
-Copy the project into a scratch run. Keep the bottom 102 pixels free for two caption lines. Media files belong in `media/`; licenses and notes stay outside that directory.
+Copy the project into a scratch run. Keep the bottom 102 pixels free for two caption lines. Media files belong in `media/`. Licenses and notes stay outside that directory.
 
 `src/main.rs` loads media at runtime, preserves stereo audio, uses the Metal renderer, and encodes H.264 at CRF 18. The command line also accepts `--renderer skia-cpu` when a GPU is unavailable. No native preview opens unless the `preview` command is requested.
 

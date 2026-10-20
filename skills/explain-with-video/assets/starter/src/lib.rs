@@ -13,8 +13,6 @@ const AMBER: &str = "#ffca63";
 const GREEN: &str = "#70e0b3";
 const TRACK: &str = "#243c59";
 
-// timing helpers: every animation is a function of video seconds.
-
 fn clamp01(x: f32) -> f32 {
     x.clamp(0.0, 1.0)
 }
@@ -65,8 +63,6 @@ fn pulse(t: f32, start: f32) -> f32 {
 fn seconds(frame: &Frame) -> f32 {
     frame.global_index as f32 / ExplainerVideo::FPS as f32
 }
-
-// the screen actor: a list, then a confirmation, pushed in after a tap.
 
 const SCREEN_X: f32 = 1256.0;
 const SCREEN_Y: f32 = 136.0;
@@ -150,8 +146,6 @@ fn screen<'a>(t: f32) -> Svgr<'a> {
     </g>)
 }
 
-// the pointer: travels between waypoints, presses at taps.
-
 const POINTER: [(f32, f32, f32); 6] = [
     (0.6, 1500.0, 880.0),
     (1.4, 1300.0, 456.0),
@@ -206,8 +200,6 @@ fn pointer<'a>(t: f32) -> Svgr<'a> {
     </g>)
 }
 
-// the lifted row: the same row leaves the screen, grows, and returns.
-
 const LIFT_START: f32 = 1.9;
 const LIFT_END: f32 = 4.9;
 
@@ -238,8 +230,6 @@ fn lifted<'a>(t: f32) -> Svgr<'a> {
     </g>)
 }
 
-// the measure: a quantity grows against a fixed line while its number counts.
-
 fn measure<'a>(t: f32) -> Svgr<'a> {
     let opacity = window(t, 2.8, 4.9);
     if opacity <= 0.0 {
@@ -263,8 +253,6 @@ fn measure<'a>(t: f32) -> Svgr<'a> {
         </g>
     </g>)
 }
-
-// the path: a token travels through the stages as the viewer acts.
 
 fn path<'a>(t: f32) -> Svgr<'a> {
     let opacity = window(t, TAP_ROW, 10.4);
@@ -300,8 +288,6 @@ fn path<'a>(t: f32) -> Svgr<'a> {
         <text x="680" y={y - 56.0} text-anchor="middle" font-size="34" fill={GREEN} opacity={replaced}>"calm-marmot replaced"</text>
     </g>)
 }
-
-// the video: stage underneath, chapters on top.
 
 #[derive(Debug)]
 pub struct ExplainerVideo {

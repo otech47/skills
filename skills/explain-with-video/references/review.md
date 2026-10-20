@@ -14,17 +14,17 @@ Review the actual encoded file that will be delivered. Record its hash, duration
 ## motion
 
 ```bash
-python3 "$HOME/.agents/skills/explain-with-video/scripts/check-motion.py"   "$RUN/files/video.mp4" --output "$RUN/files/motion-check.json"
+python3 "$HOME/.agents/skills/explain-with-video/scripts/check-motion.py" "$RUN/files/video.mp4" --output "$RUN/files/motion-check.json"
 ```
 
-The script decodes the file at a low rate and measures how much of it is visibly changing. It fails on low coverage, on any still window longer than two seconds, and on any hard cut. Read its dead windows against the timeline and fix the scenes behind them. A pass is the floor, not the review: ambient drift can raise coverage without teaching anything, and a thin pointer on a static screen can register as still.
+The script decodes the file at a low rate and measures how much of it is visibly changing. It fails on low coverage, on any still window longer than two seconds, and on any hard cut. Read its dead windows against the timeline and fix the scenes behind them. A pass is a minimum, not the review: ambient drift can raise coverage without teaching anything, and a thin pointer on a static screen can register as still.
 
 Then run the stills test from `motion.md` on the encoded file: one frame per second, and for each scene name what the stills do not carry. A scene whose stills carry everything is a slide and goes back to the plan. Record the per-scene answers in the manifest. The upstream review checklist in the design guide covers polish and comes after this.
 
 ## sound, captions, and playback
 
 ```bash
-python3 "$HOME/.agents/skills/explain-with-video/scripts/check-media.py"   "$RUN/files/video.mp4" --captions "$RUN/files/audio/captions.vtt"   --output "$RUN/files/media-check.json"
+python3 "$HOME/.agents/skills/explain-with-video/scripts/check-media.py" "$RUN/files/video.mp4" --captions "$RUN/files/audio/captions.vtt" --output "$RUN/files/media-check.json"
 ```
 
 Use `--help` for the current options. Use `--silent` only for an explicitly silent video, omitting `--captions` when none exist. For the default export, require `--width 1920 --height 1080` and compare the measured frame rate with the project timeline. Decode the full file, check the expected streams and duration, measure loudness and peak level, and validate captions. Correct failures before calling the export complete. Missing, skipped, and unsupported checks are not passes.

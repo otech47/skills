@@ -10,7 +10,7 @@ Start with the answer or useful task. Introduce prerequisites before using them.
 
 ## decide what the motion teaches
 
-A video earns its cost only where the viewer learns from change: a state becoming another state, an action happening on the real UI, a quantity crossing a threshold, a token moving through a process, a part found inside its whole. Read `motion.md` now, before writing scenes, and pick a motion for every fact the narration states. A fact that would be spoken over a still is either cut, moved to the source note, or given a motion.
+A video is worth its cost only where the viewer learns from change: a state becoming another state, an action happening on the real UI, a quantity crossing a threshold, a token moving through a process, a part found inside its whole. Read `motion.md` now, before writing scenes, and pick a motion for every fact the narration states. A fact that would be spoken over a still is either cut, moved to the source note, or given a motion.
 
 Design one continuous stage with persistent actors and a moving camera, where each scene is a chapter of the same stage. The end state of a chapter is the start state of the next.
 

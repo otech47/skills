@@ -2,11 +2,11 @@
 
 A report shows states. A video shows how one state becomes another, and the viewer learns from the change itself: what moved, where it came from, what it caused, what it crossed. That is the only reason to spend a video's production cost instead of writing a report.
 
-The failure to avoid is the narrated slideshow: a static layout per scene, cards fading in beside a screenshot, a screenshot swapped for the next screenshot, one arrow sliding across the screen, a voice reading over it. If one frame per second carries the whole explanation, the result is a slideshow and should have been a report. Read this file before the upstream design guide; that guide covers polish (easing, stagger, margins) and assumes the motion already means something.
+The failure to avoid is the narrated slideshow: a static layout per scene, cards fading in beside a screenshot, a screenshot swapped for the next screenshot, one arrow sliding across the screen, a voice reading over it. If one frame per second carries the whole explanation, the result is a slideshow and should have been a report. Read this file before the upstream design guide. That guide covers polish, such as easing, stagger and margins, and assumes the motion already means something.
 
 ## one stage, not slides
 
-Design the video as one continuous stage. Persistent actors hold their place and transform: the phone, the chart, the timeline, the diagram of the system. The camera moves. Scenes are chapters of the same stage. Text changes between chapters; the subject is not redrawn.
+Design the video as one continuous stage. Persistent actors hold their place and transform: the phone, the chart, the timeline, the diagram of the system. The camera moves. Scenes are chapters of the same stage. Text changes between chapters. The subject is not redrawn.
 
 The end state of a chapter is the start state of the next. No hard cut, no blank frame, no layout swap. When the layout must change, move the actors to their new place while the viewer watches, so the viewer never has to re-find the subject.
 
@@ -22,7 +22,7 @@ In FFrames, draw persistent actors in `Video::render_frame` with global time (`f
 | a comparison or decision | both cases start from the same origin and diverge in front of the viewer; one crosses the line, one stops short. |
 | a process with stages | a token travels along a path through the stages; each stage lights as the token arrives; the stage the system is waiting on keeps moving. |
 | part inside whole | the camera zooms from the whole toward the part while the whole stays partly visible, then returns. |
-| where something lives | the same pixels fly from their place in the whole to the callout and back, with a connecting line while they are out. |
+| where something is on the screen | the same pixels fly from their place in the whole to the callout and back, with a connecting line while they are out. |
 | time passing or background work | a clock or progress fills continuously at a rate the viewer can read; "you can leave" is shown by the phone leaving while the progress keeps filling. |
 | cause and effect | the cause moves first, the effect follows after a short lag, and a line draws on between them. |
 | substitution or replacement | the old element exits along a path and the new element arrives along the same path into the same slot. |
@@ -63,19 +63,19 @@ In the scene plan, each scene lists `motion` beats and a `carry`:
   "motion": [
     { "at": "calm marmot", "move": "the pointer travels to the calm-marmot row; the row lifts off the phone and grows into the callout", "shows": "which row the decision is about and where it is on the screen" },
     { "at": "eighty-four percent", "move": "the row's uptime bar grows to 84 against the fixed 90 line", "shows": "the rule is failed by six points" },
-    { "at": "Replace is available", "move": "the Replace button on the lifted row presses once", "shows": "the action lives on this row" }
+    { "at": "Replace is available", "move": "the Replace button on the lifted row presses once", "shows": "the action is on this row" }
   ],
   "carry": "the lifted row returns to the phone; the phone stays in place for the next chapter"
 }
 ```
 
-A beat names the cue word, the movement from one state to another, and what the movement teaches. A scene whose beats teach nothing is a slide; redesign it before writing code. `scripts/narrate.py` ignores these fields, so they cost nothing at narration time.
+A beat names the cue word, the movement from one state to another, and what the movement teaches. A scene whose beats teach nothing is a slide. Redesign it before writing code. `scripts/narrate.py` ignores these fields, so they cost nothing at narration time.
 
 ## the stills test
 
 Before the full render and again on the encoded file, lay out one frame per second (`strip`, or `ffmpeg -vf fps=1,tile=`). For each scene, name what the stills do not carry: the tap, the growth, the crossing, the travel, the swap. If the answer is "nothing" for any scene, that scene is a slide and goes back to the plan.
 
-`scripts/check-motion.py` measures how much of the video is visibly changing, finds the longest dead windows, and detects hard cuts. Run it on every render. It catches a slideshow; it cannot tell informative motion from ambient drift, so the stills test is the judgment and the script is the floor.
+`scripts/check-motion.py` measures how much of the video is visibly changing, finds the longest dead windows, and detects hard cuts. Run it on every render. It catches a slideshow. It cannot tell informative motion from ambient drift, so the stills test is the judgment and the script is only a minimum check.
 
 ## worked example
 
