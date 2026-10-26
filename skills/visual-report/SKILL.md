@@ -29,7 +29,7 @@ mode selection applies to this report only. `questions` remains the default for 
 
 - One self-contained HTML report with inline assets, supported claims, meaningful source links, and readable light and dark palettes.
 - Visuals explain the subject, not the author's workflow. A colored paragraph card is not a relationship diagram.
-- The reader can identify the subject and main answer from the first screen without this conversation.
+- The reader can identify the subject and main answer from the first screen without this conversation. With every fold closed, the page is the opening alone: subject, answer, one or two visuals, and the conditions that change the answer, within two screens at 1280 by 900. Every later section is a section fold whose headline states its claim and which reads as an ordinary section when open. The render check fails a longer closed page or a generic fold headline. Sequence mode, when requested, runs the check without the length limit.
 - Keep material qualifications with the claims they affect. Optional detail cannot conceal a contradiction in the headline or diagram.
 - Verify the final rendered bytes, including wide and narrow screenshot review. A successful HTML write is not a completed report.
 - Hand off the local link and a brief gist. Do not repeat the report in chat.

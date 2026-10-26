@@ -7,3 +7,5 @@ read `references/sequence.md` completely, then read its references when directed
 references to `SKILL.md` inside the legacy hierarchy or template mean `references/sequence.md`, not the mode selector.
 
 if the optional `dataviz` skill is unavailable, use explicit units, truthful scales and denominators, and labeled uncertainty. do not fetch or invent a missing skill.
+
+run the render check with `--no-closed-cap`. the two-screen limit on the closed page belongs to questions mode. the fold-headline check applies to every report.

@@ -57,7 +57,8 @@
      still works one level deep, e.g. a table inside <details>. Add class
      "breakout" (or "wide") to opt an element in beyond the defaults below. */
   .breakout, .wide,
-  main > .hero, main > .grid, main > .t-scroll, main > pre {
+  main > .hero, main > .grid, main > .t-scroll, main > pre,
+  main > details.section > .hero, main > details.section > .grid, main > details.section > .t-scroll, main > details.section > pre {
     width: min(var(--wide), 100vw - 40px);
     margin-left: calc(50% - min(var(--wide), 100vw - 40px) / 2);
     margin-right: calc(50% - min(var(--wide), 100vw - 40px) / 2);
@@ -66,7 +67,7 @@
   /* Stacked dropdowns are one visual set, so their widths move together. When any
      top-level fold opts into the breakout, all of them follow, which keeps one
      wide fold from sitting among narrow neighbours with mismatched edges. */
-  main:has(> details.breakout, > details.wide) > details {
+  main:has(> details.breakout, > details.wide) > details:not(.section) {
     width: min(var(--wide), 100vw - 40px);
     margin-left: calc(50% - min(var(--wide), 100vw - 40px) / 2);
     margin-right: calc(50% - min(var(--wide), 100vw - 40px) / 2);
@@ -147,6 +148,22 @@
      letting it stretch full width. Tables and other wide blocks keep the room. */
   details > p, details > ul, details > ol, details > blockquote { max-width: var(--maxw); }
 
+  /* ---- section fold: a whole section the reader opens from its headline ----
+     Closed, the page below the opening reads as a list of headlines. Open, the
+     section reads as an ordinary part of the document: no card, full width, its
+     own figures, grids, tables and detail folds, taking the space it needs. The
+     summary is the section heading; do not nest an h2 inside it. */
+  details.section { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; padding: 0; margin: 0; }
+  main > details.section:has(+ :not(details.section)), main > details.section:last-child { border-bottom: 1px solid var(--line); }
+  details.section > summary { font-size: 1.4rem; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; padding: 1.1rem 0; }
+  details.section > summary::marker { font-size: .7em; }
+  details.section[open] { padding-bottom: 1.8rem; }
+  details.section[open] > summary { padding-bottom: .4rem; }
+  details.section > p, details.section > ul, details.section > ol, details.section > blockquote { max-width: none; }
+  details.section h3 { margin-top: 1.4rem; }
+  details.section .hero { margin-block: 1rem 1.6rem; }
+  details.section details { margin: 1rem 0; }
+
   /* Wrap tables in <div class="t-scroll"> rather than setting display:block on the
      table itself. display:block drops table layout, so the table shrink-wraps to
      its content and its borders stop mid-column. */
@@ -178,9 +195,26 @@
 
   <p class="eyebrow">subject in familiar terms</p>
   <h1>the supported finding or central explanation</h1>
+  <p class="thesis">one or two sentences that explain the title.</p>
+
+  <!-- The opening: one or two .hero figures, a .stats row only for figures that are
+       the finding, and the .callout when one line must be remembered. With every
+       fold closed the page ends within two screens at 1280 by 900. -->
+
+  <!-- Every later section is a section fold. Its summary is the headline that states
+       the section's claim. Open, it reads as an ordinary section: prose, .grid cards,
+       .hero figures, .t-scroll tables, and plain <details> detail folds for optional
+       depth beside the answer they extend.
+
+  <details class="section">
+    <summary>headline that states this section's claim</summary>
+    <p>the section, at the length it needs.</p>
+    <details><summary>the question this optional detail answers</summary><p>optional depth.</p></details>
+  </details>
+  -->
 
   <!-- Construct the selected answers and their visuals from files/report-plan.md.
-       No lens, section count, fold, or ending is preselected here. -->
+       No lens, section count, or ending is preselected here. -->
 
 </main>
 </body>

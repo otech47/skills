@@ -45,6 +45,12 @@ the checker compares element positions and sizes across themes. a theme-specific
 
 [axe contrast API](https://www.deque.com/axe/core-documentation/api-documentation/) and [contrast thresholds](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum) define the automated text check. raster image content and unsupported SVG paints are outside a complete contrast guarantee.
 
+## closed page and fold headlines
+
+`closed-page-length` measures the page in its authored state, with every fold the author left closed still closed, on the widest measured view of at least 1024px. a page taller than 1800px there, two 900px screens, returns exit 1 with the measured height. the default widths have no such view, so the check is unsupported until `--widths 375,1280` or another wide width is passed. `--closed-cap PX` changes the limit. `--no-closed-cap` disables it for sequence mode and records the check as unsupported. the manifest records `closedPage` with the view, width, page height, screens, and limit.
+
+`fold-headlines` reads every `details` element once. a fold without a `summary`, a headline of fewer than three words, a generic headline such as `details`, `evidence`, `more`, `notes`, `appendix`, `background`, `methodology`, `sources`, `open questions`, or `next steps`, and a headline repeated by another fold each return exit 1 with the offending text. the manifest records `folds` with each headline, whether it is a section fold (`details.section`) or a detail fold, and whether it was authored open. the comparison lowercases the text and ignores punctuation.
+
 ## experimental geometry
 
 `--geometry` warns about SVG text outside its viewport, overlapping label rectangles, and straight stroked connectors intersecting labels. normal text inside a node is not a collision. warnings include element descriptions and coordinates, with a crop in the selected screenshot theme. decorative SVGs marked `aria-hidden="true"`, hidden text, and definitions are excluded.

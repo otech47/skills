@@ -158,7 +158,7 @@ try {
       assert.match(JSON.stringify(run.result?.errors), /timeout|timed out/i);
     });
   });
-  await test('long-theme.html', ['--widths', '375,1280', '--theme', 'both'], async run => {
+  await test('long-theme.html', ['--widths', '375,1280', '--theme', 'both', '--no-closed-cap'], async run => {
     await assertion('long responsive document remains mechanically clean', () => assert.equal(run.code, 0));
     for (const [name, width, theme, pixel] of [['wide-light', 820, 'light', 250], ['wide-dark', 820, 'dark', 17], ['narrow-light', 500, 'light', 250], ['narrow-dark', 500, 'dark', 17], ['width-375-light', 375, 'light', 250], ['width-375-dark', 375, 'dark', 17], ['width-1280-light', 1280, 'light', 250], ['width-1280-dark', 1280, 'dark', 17]]) {
       await assertion(`${name}: fixed 900px viewport, complete 2700px PNG, actual theme pixel`, async () => {
@@ -263,6 +263,49 @@ try {
       assert.equal(run.code, 0);
       assert.ok(!run.result?.checks?.some(check => check.status === 'warn' && /cross|intersect|collision/i.test(JSON.stringify(check))), describeChecks(run.result));
       assert.ok(run.result?.checks?.some(check => check.status === 'unsupported' && /curve|path/i.test(JSON.stringify(check))), describeChecks(run.result));
+    });
+  });
+  await test('closed-long.html', ['--widths', '1280'], async run => {
+    await assertion('closed page above two screens at 1280 is a confirmed defect', () => {
+      assert.equal(run.code, 1, describeChecks(run.result));
+      const check = run.result.checks.find(c => c.name === 'closed-page-length');
+      assert.equal(check?.status, 'fail', describeChecks(run.result));
+      assert.match(check.detail, /\d+px at 1280px wide/);
+      assert.ok(run.result.closedPage?.pageHeight > 1800);
+    });
+  });
+  await test('closed-long.html', [], async run => {
+    await assertion('closed page length is unsupported without a wide view', () => {
+      assert.equal(run.code, 0, describeChecks(run.result));
+      assert.equal(run.result.checks.find(c => c.name === 'closed-page-length')?.status, 'unsupported');
+    });
+  });
+  await test('closed-long.html', ['--widths', '1280', '--no-closed-cap'], async run => {
+    await assertion('--no-closed-cap disables the length limit and records it as unsupported', () => {
+      assert.equal(run.code, 0, describeChecks(run.result));
+      assert.equal(run.result.checks.find(c => c.name === 'closed-page-length')?.status, 'unsupported');
+    });
+  });
+  await test('generic-fold.html', [], async run => {
+    await assertion('generic, two-word and repeated fold headlines are a confirmed defect', () => {
+      assert.equal(run.code, 1, describeChecks(run.result));
+      const check = run.result.checks.find(c => c.name === 'fold-headlines');
+      assert.equal(check?.status, 'fail', describeChecks(run.result));
+      assert.match(check.detail, /"details" does not state/);
+      assert.match(check.detail, /"raw numbers" does not state/);
+      assert.match(check.detail, /repeats another fold headline/);
+      assert.equal(run.result.folds.length, 4);
+    });
+  });
+  await test('section-folds.html', ['--widths', '1280'], async run => {
+    await assertion('section folds with claim headlines keep the closed page within two screens', () => {
+      assert.equal(run.code, 0, describeChecks(run.result));
+      assert.equal(run.result.checks.find(c => c.name === 'closed-page-length')?.status, 'pass');
+      assert.ok(run.result.closedPage.pageHeight <= 1800, `closed page ${run.result.closedPage.pageHeight}px`);
+      assert.equal(run.result.folds.filter(f => f.kind === 'section').length, 3);
+      assert.equal(run.result.folds.filter(f => f.kind === 'detail').length, 1);
+      const expanded = run.result.views.find(v => v.width === 1280 && v.state === 'expanded');
+      assert.ok(expanded && expanded.pageHeight > run.result.closedPage.pageHeight, 'expanded view should be taller than the closed page');
     });
   });
   const concurrentOutput = path.join(outputRoot, 'concurrent');

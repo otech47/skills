@@ -6,7 +6,7 @@ const { createHash } = require('node:crypto');
 const inspectPage = require('./render-page.cjs');
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const options = { timeout: 60000, geometry: false, widths: [], theme: 'dark', cache: true, 'max-size': 150 };
+const options = { timeout: 60000, geometry: false, widths: [], theme: 'dark', cache: true, 'max-size': 150, 'closed-cap': 1800 };
 let source, output, basename, browser, run, axeSource;
 const result = { source: {}, checks: [], views: [], errors: [], status: 'error', exitCode: 2, reviewRequired: true };
 const started = Date.now();
@@ -29,7 +29,8 @@ function argumentsFor(args) {
     if (arg === '--help' || arg === '-h') return false;
     if (arg === '--geometry') { options.geometry = true; continue; }
     if (arg === '--no-cache') { options.cache = false; continue; }
-    if (['--output-dir', '--timeout', '--browser', '--widths', '--theme', '--max-size'].includes(arg)) {
+    if (arg === '--no-closed-cap') { options['closed-cap'] = 0; continue; }
+    if (['--output-dir', '--timeout', '--browser', '--widths', '--theme', '--max-size', '--closed-cap'].includes(arg)) {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new Error(`missing value for ${arg}`);
       options[arg.slice(2)] = value;
@@ -43,6 +44,8 @@ function argumentsFor(args) {
   if (!Number.isInteger(options.timeout) || options.timeout < 100 || options.timeout > 600000) throw new Error('--timeout must be 100 to 600000 milliseconds');
   options['max-size'] = Number(options['max-size']);
   if (!Number.isInteger(options['max-size']) || options['max-size'] < 1 || options['max-size'] > 10240) throw new Error('--max-size must be 1 to 10240 kilobytes');
+  options['closed-cap'] = Number(options['closed-cap']);
+  if (!Number.isInteger(options['closed-cap']) || options['closed-cap'] < 0 || options['closed-cap'] > 20000) throw new Error('--closed-cap must be 0 to 20000 pixels');
   options.widths = typeof options.widths === 'string' ? options.widths.split(',').map(Number) : [];
   if (options.widths.some(w => !Number.isInteger(w) || w < 240 || w > 3840)) throw new Error('--widths must contain comma-separated widths from 240 to 3840');
   return true;
@@ -229,8 +232,42 @@ async function capture(page, name, state) {
   }
 }
 
+// the page with its authored folds closed is what a reader sees first. two 900px screens at 1280 wide is the limit;
+// a longer opening means sections that should be folds. measured once, on the widest view of at least 1024px.
+function closedPage(view) {
+  const limit = options['closed-cap'];
+  const screens = Math.round(view.pageHeight / 9) / 100;
+  result.closedPage = { view: view.name, width: view.width, pageHeight: view.pageHeight, screens, limit };
+  add('closed-page-length', view.pageHeight > limit ? 'fail' : 'pass', `page with authored folds closed is ${view.pageHeight}px at ${view.width}px wide, ${screens} screens of 900px; limit ${limit}px`, { view: view.name, state: 'default' });
+}
+
+// a fold headline is the only thing a reader sees before deciding to open it, so it has to state what the fold holds.
+const GENERIC_HEADLINES = new Set(['details', 'detail', 'more', 'more details', 'more detail', 'evidence', 'notes', 'note', 'appendix', 'background', 'context', 'methodology', 'method', 'methods', 'sources', 'references', 'data', 'numbers', 'the numbers', 'the data', 'read more', 'learn more', 'show more', 'see more', 'expand', 'technical details', 'implementation details', 'further reading', 'additional information', 'additional details', 'misc', 'other', 'caveats', 'limitations', 'assumptions', 'how it works', 'what changed', 'open questions', 'next steps', 'summary', 'overview', 'deep dive', 'full table', 'raw data', 'the details', 'the evidence', 'supporting evidence', 'source audit', 'commit list', 'test inventory', 'why this matters', 'why it matters', 'what this means', 'in depth', 'full list', 'everything else']);
+const normalizeHeadline = text => text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+async function foldHeadlines(page) {
+  const folds = await page.evaluate(() => [...document.querySelectorAll('details')].map(d => {
+    const summary = [...d.children].find(c => c.tagName === 'SUMMARY');
+    return { headline: summary ? summary.textContent.replace(/\s+/g, ' ').trim() : '', hasSummary: !!summary, kind: d.classList.contains('section') ? 'section' : 'detail', open: d.open };
+  }));
+  const problems = [];
+  const seen = new Set();
+  for (const fold of folds) {
+    const key = normalizeHeadline(fold.headline);
+    if (!fold.hasSummary) problems.push('a details element has no summary');
+    else if (GENERIC_HEADLINES.has(key) || key.split(' ').length < 3) problems.push(`"${fold.headline}" does not state what the fold holds`);
+    else if (seen.has(key)) problems.push(`"${fold.headline}" repeats another fold headline`);
+    seen.add(key);
+  }
+  result.folds = folds;
+  const sections = folds.filter(f => f.kind === 'section').length;
+  add('fold-headlines', problems.length ? 'fail' : 'pass', problems.length ? [...new Set(problems)].join('\n') : `${folds.length} fold headlines checked (${sections} section, ${folds.length - sections} detail)`);
+}
+
 async function inspectViews() {
   const viewportWidths = [...new Set([820, 500, ...options.widths])];
+  const capWidth = Math.max(0, ...viewportWidths.filter(w => w >= 1024));
+  if (!options['closed-cap']) add('closed-page-length', 'unsupported', 'closed-page limit disabled with --no-closed-cap');
+  else if (!capWidth) add('closed-page-length', 'unsupported', 'closed-page length needs a view at least 1024px wide; pass --widths 375,1280');
   for (const width of viewportWidths) for (const theme of ['light', 'dark']) {
     const name = `${width === 820 ? 'wide' : width === 500 ? 'narrow' : `width-${width}`}-${theme}`;
     const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce', serviceWorkers: 'block', deviceScaleFactor: 1 });
@@ -253,6 +290,8 @@ async function inspectViews() {
       await page.evaluate(axeSource);
       await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}' });
       await capture(page, name, 'default');
+      if (theme === 'light' && width === viewportWidths[0]) await foldHeadlines(page);
+      if (theme === 'dark' && width === capWidth && options['closed-cap']) closedPage(result.views.at(-1));
       const details = await page.locator('details:not([open])').count();
       if (details) {
         const exclusive = await page.locator('details[name]').count();
@@ -272,7 +311,7 @@ module.exports = { measureReportSize };
 if (require.main === module) (async () => {
   try {
     if (!argumentsFor(process.argv.slice(2))) {
-      console.log('usage: check-render.sh REPORT [--output-dir DIR] [--timeout MS] [--browser PATH] [--widths 375,1280] [--theme dark|light|both] [--max-size KB] [--geometry] [--no-cache]');
+      console.log('usage: check-render.sh REPORT [--output-dir DIR] [--timeout MS] [--browser PATH] [--widths 375,1280] [--theme dark|light|both] [--max-size KB] [--closed-cap PX | --no-closed-cap] [--geometry] [--no-cache]');
       return;
     }
     output = path.resolve(options['output-dir'] || path.dirname(source));
@@ -282,7 +321,7 @@ if (require.main === module) (async () => {
     result.source = { path: source, sha256: hash(bytes), bytes: bytes.length };
     result.startedAt = new Date(started).toISOString();
     const tool = hash(Buffer.concat(await Promise.all([__filename, path.join(__dirname, 'render-page.cjs'), path.join(__dirname, 'package.json')].map(f => fs.readFile(f))))).slice(0, 12);
-    result.cacheKey = `${tool}:${options.theme}:${[...options.widths].sort((a, b) => a - b).join(',')}:${options.geometry ? 'geometry' : ''}:${options['max-size']}`;
+    result.cacheKey = `${tool}:${options.theme}:${[...options.widths].sort((a, b) => a - b).join(',')}:${options.geometry ? 'geometry' : ''}:${options['max-size']}:${options['closed-cap']}`;
     const hit = await cached(result.source.sha256);
     if (hit) {
       hit.previous.cacheHits = (hit.previous.cacheHits || 0) + 1;
