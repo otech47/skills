@@ -287,23 +287,26 @@ try {
     });
   });
   await test('generic-fold.html', [], async run => {
-    await assertion('generic, two-word and repeated fold headlines are a confirmed defect', () => {
+    await assertion('generic, tagline, joined and repeated fold headlines are a confirmed defect', () => {
       assert.equal(run.code, 1, describeChecks(run.result));
       const check = run.result.checks.find(c => c.name === 'fold-headlines');
       assert.equal(check?.status, 'fail', describeChecks(run.result));
-      assert.match(check.detail, /"details" does not state/);
-      assert.match(check.detail, /"raw numbers" does not state/);
+      assert.match(check.detail, /"details" does not name/);
+      assert.match(check.detail, /"eight name and avatar directions from the obvious to the deep" is too long/);
+      assert.match(check.detail, /"only you can start work: the three tiers" joins two phrases/);
       assert.match(check.detail, /repeats another fold headline/);
-      assert.equal(run.result.folds.length, 4);
+      assert.equal(run.result.folds.length, 5);
     });
   });
   await test('section-folds.html', ['--widths', '1280'], async run => {
-    await assertion('section folds with claim headlines keep the closed page within two screens', () => {
+    await assertion('plain section headlines with a subtitle keep the closed page within two screens', () => {
       assert.equal(run.code, 0, describeChecks(run.result));
       assert.equal(run.result.checks.find(c => c.name === 'closed-page-length')?.status, 'pass');
       assert.ok(run.result.closedPage.pageHeight <= 1800, `closed page ${run.result.closedPage.pageHeight}px`);
       assert.equal(run.result.folds.filter(f => f.kind === 'section').length, 3);
       assert.equal(run.result.folds.filter(f => f.kind === 'detail').length, 1);
+      assert.equal(run.result.folds[0].headline, 'the long table');
+      assert.match(run.result.folds[0].subtitle, /^every row/);
       const expanded = run.result.views.find(v => v.width === 1280 && v.state === 'expanded');
       assert.ok(expanded && expanded.pageHeight > run.result.closedPage.pageHeight, 'expanded view should be taller than the closed page');
     });

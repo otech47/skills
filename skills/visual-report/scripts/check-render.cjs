@@ -241,20 +241,32 @@ function closedPage(view) {
   add('closed-page-length', view.pageHeight > limit ? 'fail' : 'pass', `page with authored folds closed is ${view.pageHeight}px at ${view.width}px wide, ${screens} screens of 900px; limit ${limit}px`, { view: view.name, state: 'default' });
 }
 
-// a fold headline is the only thing a reader sees before deciding to open it, so it has to state what the fold holds.
-const GENERIC_HEADLINES = new Set(['details', 'detail', 'more', 'more details', 'more detail', 'evidence', 'notes', 'note', 'appendix', 'background', 'context', 'methodology', 'method', 'methods', 'sources', 'references', 'data', 'numbers', 'the numbers', 'the data', 'read more', 'learn more', 'show more', 'see more', 'expand', 'technical details', 'implementation details', 'further reading', 'additional information', 'additional details', 'misc', 'other', 'caveats', 'limitations', 'assumptions', 'how it works', 'what changed', 'open questions', 'next steps', 'summary', 'overview', 'deep dive', 'full table', 'raw data', 'the details', 'the evidence', 'supporting evidence', 'source audit', 'commit list', 'test inventory', 'why this matters', 'why it matters', 'what this means', 'in depth', 'full list', 'everything else']);
+// a fold headline is what the reader skims to pick a section, so it names the contents the way the reader would look for them:
+// two to eight plain words, not a claim, not a tagline, not a generic label. the optional .sub subtitle carries the reason to open it.
+const GENERIC_HEADLINES = new Set(['details', 'detail', 'more', 'more details', 'more detail', 'evidence', 'notes', 'note', 'appendix', 'background', 'context', 'methodology', 'method', 'methods', 'sources', 'references', 'data', 'numbers', 'the numbers', 'the data', 'raw numbers', 'read more', 'learn more', 'show more', 'see more', 'expand', 'technical details', 'implementation details', 'further reading', 'additional information', 'additional details', 'misc', 'other', 'caveats', 'limitations', 'assumptions', 'how it works', 'what changed', 'open questions', 'next steps', 'summary', 'overview', 'deep dive', 'full table', 'raw data', 'the details', 'the evidence', 'supporting evidence', 'source audit', 'commit list', 'test inventory', 'why this matters', 'why it matters', 'what this means', 'in depth', 'full list', 'everything else']);
+const COUNT_WORDS = /^(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozens?|several|many|a few|some|all|every)\b/;
 const normalizeHeadline = text => text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
 async function foldHeadlines(page) {
   const folds = await page.evaluate(() => [...document.querySelectorAll('details')].map(d => {
     const summary = [...d.children].find(c => c.tagName === 'SUMMARY');
-    return { headline: summary ? summary.textContent.replace(/\s+/g, ' ').trim() : '', hasSummary: !!summary, kind: d.classList.contains('section') ? 'section' : 'detail', open: d.open };
+    const clean = t => t.replace(/\s+/g, ' ').trim();
+    if (!summary) return { headline: '', subtitle: '', hasSummary: false, kind: d.classList.contains('section') ? 'section' : 'detail', open: d.open };
+    const copy = summary.cloneNode(true);
+    const subs = [...copy.querySelectorAll('.sub')];
+    const subtitle = clean(subs.map(e => e.textContent).join(' '));
+    subs.forEach(e => e.remove());
+    return { headline: clean(copy.textContent), subtitle, hasSummary: true, kind: d.classList.contains('section') ? 'section' : 'detail', open: d.open };
   }));
   const problems = [];
   const seen = new Set();
   for (const fold of folds) {
     const key = normalizeHeadline(fold.headline);
+    const words = key ? key.split(' ').length : 0;
     if (!fold.hasSummary) problems.push('a details element has no summary');
-    else if (GENERIC_HEADLINES.has(key) || key.split(' ').length < 3) problems.push(`"${fold.headline}" does not state what the fold holds`);
+    else if (GENERIC_HEADLINES.has(key) || words < 2) problems.push(`"${fold.headline}" does not name what the fold holds`);
+    else if (words > 8) problems.push(`"${fold.headline}" is too long to skim; name the contents in two to eight words`);
+    else if (COUNT_WORDS.test(key)) problems.push(`"${fold.headline}" leads with a count; name the contents instead`);
+    else if (/[:.;!?]\s*\S/.test(fold.headline)) problems.push(`"${fold.headline}" joins two phrases; keep one name and move the rest to the subtitle`);
     else if (seen.has(key)) problems.push(`"${fold.headline}" repeats another fold headline`);
     seen.add(key);
   }

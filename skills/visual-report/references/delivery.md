@@ -64,7 +64,7 @@ The checker includes 820px and 500px views, measures both palettes, and captures
 - Inspect expanded sections and relevant scroll-container positions. Check named exclusive details groups manually when reported unsupported.
 - Fix overflow, failed resources, script errors, contrast failures, and label collisions. Unsupported checks are not passes. The optional `--geometry` check covers limited SVG relationships; visual review still applies.
 - `closed-page-length` fails when the page with its authored folds closed exceeds 1800px at 1280 wide, two 900px screens. Fold sections below the opening. Do not shrink type, cut qualifications, or drop visuals to pass. Sequence mode passes `--no-closed-cap`.
-- `fold-headlines` fails a fold without a summary, a generic or two-word headline, or a headline repeated on the page. Rewrite the headline to state the section's claim.
+- `fold-headlines` fails a fold without a summary, a generic or one-word headline, a headline over eight words, a leading count, a colon or sentence break inside it, or a headline repeated on the page. Rewrite it as the plain name of what the section contains, and put the reason to open it in the subtitle.
 - After changes, rerun and inspect affected views. A cached unchanged hash reuses already reviewed screenshots; do not reread them without a reason.
 - Confirm the opening, visual explanations, qualifications, and optional details work for the intended reader. A green mechanical result alone is not completion.
 

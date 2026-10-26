@@ -155,10 +155,12 @@
      summary is the section heading; do not nest an h2 inside it. */
   details.section { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; padding: 0; margin: 0; }
   main > details.section:has(+ :not(details.section)), main > details.section:last-child { border-bottom: 1px solid var(--line); }
-  details.section > summary { font-size: 1.4rem; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; padding: 1.1rem 0; }
+  details.section > summary { font-size: 1.3rem; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; padding: .65rem 0; }
   details.section > summary::marker { font-size: .7em; }
+  details.section > summary .sub, details > summary .sub { display: block; font-size: .95rem; font-weight: 400; letter-spacing: 0; line-height: 1.35; color: var(--ink-soft); margin-top: .15rem; }
+  details > summary .sub { font-size: .92rem; margin-top: .15rem; }
   details.section[open] { padding-bottom: 1.8rem; }
-  details.section[open] > summary { padding-bottom: .4rem; }
+  details.section[open] > summary { padding-bottom: .3rem; }
   details.section > p, details.section > ul, details.section > ol, details.section > blockquote { max-width: none; }
   details.section h3 { margin-top: 1.4rem; }
   details.section .hero { margin-block: 1rem 1.6rem; }
@@ -201,15 +203,17 @@
        the finding, and the .callout when one line must be remembered. With every
        fold closed the page ends within two screens at 1280 by 900. -->
 
-  <!-- Every later section is a section fold. Its summary is the headline that states
-       the section's claim. Open, it reads as an ordinary section: prose, .grid cards,
-       .hero figures, .t-scroll tables, and plain <details> detail folds for optional
-       depth beside the answer they extend.
+  <!-- Every later section is a section fold. Its summary names what the section
+       contains, in two to eight plain words, the way the reader would look for it.
+       The optional .sub line says what is inside and when the reader would want it.
+       Open, it reads as an ordinary section: prose, .grid cards, .hero figures,
+       .t-scroll tables, and plain <details> detail folds for optional depth beside
+       the answer they extend.
 
   <details class="section">
-    <summary>headline that states this section's claim</summary>
+    <summary>name and avatar options<span class="sub">eight candidates with pixel previews, and the one to use first</span></summary>
     <p>the section, at the length it needs.</p>
-    <details><summary>the question this optional detail answers</summary><p>optional depth.</p></details>
+    <details><summary>how each candidate was drawn</summary><p>optional depth.</p></details>
   </details>
   -->
 
