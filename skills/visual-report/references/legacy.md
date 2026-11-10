@@ -8,4 +8,6 @@ references to `SKILL.md` inside the legacy hierarchy or template mean `reference
 
 if the optional `dataviz` skill is unavailable, use explicit units, truthful scales and denominators, and labeled uncertainty. do not fetch or invent a missing skill.
 
+hand off the way `references/delivery.md` describes: print the link with `tailopen --print` and do not open a browser. this replaces step 6 of `references/sequence.md` and the `open` wording in its promotion section.
+
 run the render check with `--no-closed-cap`. the two-screen limit on the closed page belongs to questions mode. the fold-headline check applies to every report.

@@ -56,6 +56,8 @@ Keep prose at a readable measure. Let diagrams, comparisons, and tables use `.br
 
 On narrow screens, reflow a diagram when its relationships remain clear. Otherwise use a labeled scroll container at readable label size. Never scale a dense diagram down to illegible text. Review every necessary scroll position.
 
+For one diagram wider than the text column that must stay readable, wrap it in the pan and zoom box in `assets/zoom-canvas.md`. Inline `assets/zoom-canvas.css` and `assets/zoom-canvas.js` at build time.
+
 Use accessible text equivalents, meaningful figure labels, and redundant cues for color. Preserve contrast in both palettes. Decorative flair is separate from information design and never counts as a visual answer.
 
 ## visual acceptance

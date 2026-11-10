@@ -32,6 +32,10 @@ mode selection applies to this report only. `questions` remains the default for 
 - The reader can identify the subject and main answer from the first screen without this conversation. With every fold closed, the page is the opening alone: subject, answer, one or two visuals, and the conditions that change the answer, within two screens at 1280 by 900. Every later section is a section fold whose headline names its contents in plain words, with an optional one-line subtitle, and which reads as an ordinary section when open. The render check fails a longer closed page and a fold headline that is a claim, a tagline, or a generic label. Sequence mode, when requested, runs the check without the length limit.
 - Keep material qualifications with the claims they affect. Optional detail cannot conceal a contradiction in the headline or diagram.
 - Verify the final rendered bytes, including wide and narrow screenshot review. A successful HTML write is not a completed report.
-- Hand off the local link and a brief gist. Do not repeat the report in chat.
+- Hand off the link from `tailopen --print` and a brief gist. Do not open a browser, and do not repeat the report in chat.
 
 Mode-specific instructions define content selection and composition. Render helpers, style toggles, and permission boundaries remain shared. Backup and evaluation provenance belong in the scratch manifest or evaluation record, not the report body.
+
+## browser lifecycle on macOS
+
+The render checker connects to the verified dedicated agents Chrome on port 9226 through the agent-browser helper. Each render owns temporary contexts and closes them on completion or failure. It does not launch a fresh Chrome, use personal profiles, or stop the shared browser. Read the agent-browser skill if the dedicated browser is stopped or its access check fails. A sandbox permission error requires the native browser-access approval path, not another browser launch.

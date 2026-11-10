@@ -72,6 +72,6 @@ Use theme variables and solid text backgrounds so contrast can be measured. Reco
 
 ## handoff
 
-Open the final local HTML with `open REPORT` when interactive. For a background run, return the path without opening a browser. Use `tailopen` when cross-machine access is useful. Stop temporary resources owned by the report task and verify their completion.
+Print the report link with `tailopen --print REPORT` and give that link in the reply. Do not open the report for the reader: no `open REPORT`, no `tailopen` without `--print`, and no other browser launcher. Herdr shows the page inside the session that printed the link, and the same link loads in a browser on every Mac. If the reader asks for a browser in the current request, open one then. Stop temporary resources owned by the report task and verify their completion.
 
-Give a brief gist and a clickable report path. Keep methodology, implementation changes, or remaining evaluation limits in the reply or manifest, not the report body.
+Give a brief gist and the report link. Keep methodology, implementation changes, or remaining evaluation limits in the reply or manifest, not the report body.

@@ -191,7 +191,7 @@ async function capture(page, name, state) {
   const full = await image(page, view, stem, 'full', { fullPage: true });
   if (full.height !== measured.pageHeight || full.width !== measured.pageWidth) throw new Error(`full-page capture dimensions differ from measured page: ${stem}`);
   const after = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, pageHeight: document.documentElement.scrollHeight }));
-  if (after.width !== expected.width || after.height !== expected.height || after.pageHeight !== measured.pageHeight) throw new Error(`capture changed the viewport or layout: ${stem}`);
+  if (after.width !== expected.width || after.height !== expected.height || after.pageHeight !== measured.pageHeight) throw new Error(`capture changed the viewport or layout: ${stem}; expected ${JSON.stringify(expected)}, page height ${measured.pageHeight}; got ${JSON.stringify(after)}`);
   if (measured.pageHeight > 1800) {
     for (let y = 0; y < measured.pageHeight; y += 900) {
       await image(page, view, `${stem}-y${y}`, 'tile', { fullPage: true, clip: { x: 0, y, width: measured.width, height: Math.min(900, measured.pageHeight - y) } });
@@ -300,7 +300,7 @@ async function inspectViews() {
     try {
       await page.goto(mainUrl, { waitUntil: 'load' });
       await page.evaluate(axeSource);
-      await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}' });
+      await page.addStyleTag({ content: '*{scrollbar-width:none}*::-webkit-scrollbar{display:none}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}' });
       await capture(page, name, 'default');
       if (theme === 'light' && width === viewportWidths[0]) await foldHeadlines(page);
       if (theme === 'dark' && width === capWidth && options['closed-cap']) closedPage(result.views.at(-1));
@@ -332,7 +332,10 @@ if (require.main === module) (async () => {
     const bytes = await fs.readFile(source);
     result.source = { path: source, sha256: hash(bytes), bytes: bytes.length };
     result.startedAt = new Date(started).toISOString();
-    const tool = hash(Buffer.concat(await Promise.all([__filename, path.join(__dirname, 'render-page.cjs'), path.join(__dirname, 'package.json')].map(f => fs.readFile(f))))).slice(0, 12);
+    const helper = path.join(__dirname, '../../agent-browser/scripts/connect-browser.cjs');
+    const toolFiles = [__filename, path.join(__dirname, 'render-page.cjs'), path.join(__dirname, 'package.json')];
+    if (process.platform === 'darwin') toolFiles.push(helper);
+    const tool = hash(Buffer.concat(await Promise.all(toolFiles.map(f => fs.readFile(f))))).slice(0, 12);
     result.cacheKey = `${tool}:${options.theme}:${[...options.widths].sort((a, b) => a - b).join(',')}:${options.geometry ? 'geometry' : ''}:${options['max-size']}:${options['closed-cap']}`;
     const hit = await cached(result.source.sha256);
     if (hit) {
@@ -362,7 +365,12 @@ if (require.main === module) (async () => {
     try { ({ chromium } = require('playwright-core')); axeSource = require('axe-core').source; }
     catch { throw new Error(`missing dependency; run npm ci --prefix ${__dirname} --ignore-scripts --no-audit --no-fund`); }
     result.browserPath = await findBrowser();
-    browser = await chromium.launch({ executablePath: result.browserPath, headless: true, timeout: Math.min(15000, options.timeout) });
+    if (process.platform === 'darwin') {
+      browser = await require(helper).connectBrowser(chromium, { browserPath: result.browserPath, timeout: Math.min(15000, options.timeout) });
+      result.browserConnection = browser.metadata;
+    } else {
+      browser = await chromium.launch({ executablePath: result.browserPath, headless: true, timeout: Math.min(15000, options.timeout) });
+    }
     result.browserVersion = browser.version();
     let timer;
     try {
